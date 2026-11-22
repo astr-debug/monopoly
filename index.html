@@ -100,6 +100,14 @@ h3{margin:0 0 8px;font-size:15px;color:#9a4f78}
 .prow{display:flex;align-items:center;gap:8px;padding:9px 8px;border-radius:10px;background:#fcf7fa;margin-bottom:6px;cursor:pointer}.prow .sw{width:10px;align-self:stretch;border-radius:4px}.prow .r{margin-left:auto;font-size:13px;color:#7a3d60}
 .tokpick{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:8px 0}.tokpick button{font-size:24px;padding:6px 0;border-radius:10px;border:2px solid #f0cfe0;background:#fff;cursor:pointer}.tokpick button.on{border-color:#e2479b;background:#ffe4f1}.tokpick button:disabled{opacity:.3}
 .debt{background:#ffe6e6;color:#8a1c1c;padding:8px 10px;border-radius:10px;font-size:15px;margin-top:8px}
+.win{position:fixed;inset:0;z-index:50;background:rgba(20,8,30,.82);display:flex;align-items:center;justify-content:center}
+.win canvas{position:absolute;inset:0;width:100%;height:100%}
+.win .wbox{position:relative;text-align:center;color:#fff;padding:20px;animation:pop .6s cubic-bezier(.2,1.6,.4,1)}
+.win .wt{font-family:Lobster,cursive;font-size:clamp(40px,9vw,96px);line-height:1.05;text-shadow:0 4px 0 #e2479b,0 0 30px rgba(255,105,180,.8)}
+.win .wtok{font-size:clamp(60px,14vw,140px);animation:bob 1.2s ease-in-out infinite}
+.win .ws{font-size:clamp(16px,3vw,24px);margin:8px 0 18px;opacity:.9}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes bob{50%{transform:translateY(-12px) rotate(-6deg)}}
 .netwarn{background:#fff3cd;color:#6b4e00;padding:8px 10px;border-radius:10px;font-size:14px;margin-top:8px}
 </style>
 </head>
@@ -438,6 +446,21 @@ function openRules(){modal(`<div class="mh" style="background:#e2479b">Прав�
 function askNew(){modal(`<div class="mh" style="background:#c62828">Новая игра?</div><div class="mb"><p>Текущая партия удалится.</p><div class="btns"><button class="btn bad" id="nyes">Да, заново</button><button class="btn sec" onclick="closeM()">Отмена</button></div></div>`);
  $('nyes').onclick=()=>{closeM();S=null;NET.who={};NET.lobby=[];try{localStorage.removeItem(SAVE)}catch(e){}renderSetup()}}
 
+/* ---------- победа ---------- */
+let WIN_SHOWN=null;
+function celebrate(w,isHost){if(WIN_SHOWN===w.name)return;WIN_SHOWN=w.name;const d=document.createElement('div');d.className='win';
+ d.innerHTML=`<canvas></canvas><div class="wbox"><div class="wtok">${w.token}</div><div class="wt">${esc(w.name)}<br>побеждает!</div><div class="ws">Ленаполия покорена 🏆</div><div class="btns" style="justify-content:center"><button class="btn" id="wclose" style="flex:0 0 auto">Ура!</button>${isHost?'<button class="btn sec" id="wnew" style="flex:0 0 auto">Новая игра</button>':''}</div></div>`;
+ document.body.appendChild(d);const cv=d.querySelector('canvas'),cx=cv.getContext('2d');let W,H,run=true;const rs=()=>{W=cv.width=innerWidth*devicePixelRatio;H=cv.height=innerHeight*devicePixelRatio};rs();addEventListener('resize',rs);
+ const C=['#ff4d8d','#ffd23f','#3ddc97','#4db8ff','#b388ff','#ff8a3d','#ffffff'];let parts=[],rockets=[],t=0;
+ const launch=()=>rockets.push({x:W*(.15+Math.random()*.7),y:H,vx:(Math.random()-.5)*2,vy:-H*(.015+Math.random()*.005),c:C[Math.floor(Math.random()*C.length)]});
+ const boom=r=>{const n=70+Math.random()*40;for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,sp=(Math.random()*.8+.2)*H/160;parts.push({x:r.x,y:r.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,l:1,c:Math.random()<.2?'#fff':r.c})}};
+ const loop=()=>{if(!run)return;t++;cx.globalCompositeOperation='destination-out';cx.fillStyle='rgba(0,0,0,.22)';cx.fillRect(0,0,W,H);cx.globalCompositeOperation='lighter';
+  if(t%24===0||t===2||t===8)launch();
+  rockets=rockets.filter(r=>{r.x+=r.vx;r.y+=r.vy;r.vy+=H/4000;cx.fillStyle=r.c;cx.beginPath();cx.arc(r.x,r.y,3*devicePixelRatio,0,7);cx.fill();if(r.vy>=-H/2500){boom(r);return false}return true});
+  parts=parts.filter(q=>{q.x+=q.vx;q.y+=q.vy;q.vy+=H/12000;q.vx*=.985;q.vy*=.985;q.l-=.012;cx.globalAlpha=Math.max(q.l,0);cx.fillStyle=q.c;cx.beginPath();cx.arc(q.x,q.y,2.2*devicePixelRatio,0,7);cx.fill();cx.globalAlpha=1;return q.l>0});
+  requestAnimationFrame(loop)};loop();
+ const close=()=>{run=false;d.remove()};d.querySelector('#wclose').onclick=close;if(isHost)d.querySelector('#wnew').onclick=()=>{close();askNew()};
+}
 /* ---------- render ---------- */
 function turnUI(){const p=P();
  let status='',btn='';
@@ -482,6 +505,7 @@ function render(){if(!S)return;const p=P();
  const A={roll,again:rollAgain,end:endTurn,buy,decline,payjail:payJail,card:useCard,bankrupt:()=>modal(`<div class="mh" style="background:#c62828">Банкротство?</div><div class="mb"><p>${esc(p.name)} выбывает из игры.</p><div class="btns"><button class="btn bad" id="bk">Да</button><button class="btn sec" onclick="closeM()">Отмена</button></div></div>`)||($('bk').onclick=()=>{closeM();bankrupt()}),trade:openTrade,rules:openRules,new:askNew,qr:showJoinQR,debt:e=>{const [a,i]=e.dataset.v.split(':');doProp(a,+i,true)}};
  $('panel').querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>A[e.dataset.a]&&A[e.dataset.a](e));
  pushState();
+ if(S.winner!=null)celebrate(S.players[S.winner],true);else WIN_SHOWN=null;
 }
 
 /* ---------- start ---------- */
@@ -657,6 +681,7 @@ function renderClient(hadPrompt){const el=$('client');
   else if(pr.kind==='trade'){const d=pr.data,f=S.players[d.from];modal(`<div class="mh" style="background:#8e44ad">🤝 Обмен от ${esc(f.name)}</div><div class="mb"><p><b>${esc(f.name)}</b> отдаёт: ${esc(d.give)}</p><p><b>Ты</b> отдаёшь: ${esc(d.get)}</p><div class="btns"><button class="btn ok" id="pa">Принять</button><button class="btn bad" id="pb">Отказаться</button></div></div>`);$('pa').onclick=()=>{closeM();csend({t:'answer',id:pr.id,v:true})};$('pb').onclick=()=>{closeM();csend({t:'answer',id:pr.id,v:false})}}
   $('ovb').dataset.lock=1}}
  else if(hadPrompt&&$('ovb')&&$('ovb').dataset.lock)closeM();
+ if(S.winner!=null)celebrate(S.players[S.winner],false);
 }
 /* ---- start ---- */
 if(QS.get('join')){clientStart(QS.get('join').toUpperCase())}
