@@ -402,21 +402,22 @@ function drawTrade(){const me=P();let h=`<div class="mh" style="background:#8e44
   modal(h);$('ov').querySelectorAll('[data-tp]').forEach(e=>e.onclick=()=>{T.to=+e.dataset.tp;drawTrade()});return}
  const o=S.players[T.to],a=tradable(S.cur),b=tradable(T.to);
  const lst=(arr,nm)=>arr.length?arr.map(i=>`<label><input type="checkbox" name="${nm}" value="${i}"> ${esc(SP[i].name)}${S.props[i].mort?' (залог)':''}</label>`).join(''):'<i>нечего</i>';
- h+=`<div class="tr-col"><h3>${esc(me.name)} отдаёт</h3>${lst(a,'g')}<label>Ленокоины (есть ${M(me.money)})<input type="number" id="gm" min="0" value="0"></label></div>
- <div class="tr-col"><h3>${esc(o.name)} отдаёт</h3>${lst(b,'t')}<label>Ленокоины (есть ${M(o.money)})<input type="number" id="tm" min="0" value="0"></label></div>
+ h+=`<div class="tr-col"><h3>${esc(me.name)} отдаёт</h3>${lst(a,'g')}<label>Ленокоины${S.net&&NET.mode==='host'?'':` (есть ${M(me.money)})`}<input type="number" id="gm" min="0" value="0"></label></div>
+ <div class="tr-col"><h3>${esc(o.name)} отдаёт</h3>${lst(b,'t')}<label>Ленокоины<input type="number" id="tm" min="0" value="0"></label></div>
  <div class="btns"><button class="btn" id="tprop">Предложить</button><button class="btn sec" onclick="closeM()">Отмена</button></div></div>`;
  modal(h);$('tprop').onclick=()=>{const g=[...$('ov').querySelectorAll('input[name=g]:checked')].map(e=>+e.value),t=[...$('ov').querySelectorAll('input[name=t]:checked')].map(e=>+e.value);
   const gm=Math.max(0,parseInt($('gm').value)||0),tm=Math.max(0,parseInt($('tm').value)||0);
-  if(!g.length&&!t.length&&!gm&&!tm){toast('Выбери, что меняем');return}if(gm>Math.max(0,me.money)||tm>Math.max(0,o.money)){toast('Не хватает денег');return}
+  if(!g.length&&!t.length&&!gm&&!tm){toast('Выбери, что меняем');return}if(me.money!=null&&gm>Math.max(0,me.money)){toast('Не хватает ленокоинов');return}if(!S.net&&tm>Math.max(0,o.money)){toast('Не хватает ленокоинов');return}
   closeM();(window.SUBMIT_TRADE||proposeTrade)(S.cur,T.to,g,t,gm,tm)}}
 const tradeSum=(arr,m)=>[...arr.map(i=>SP[i].name),...(m?[M(m)]:[])].join(', ')||'ничего';
 async function proposeTrade(from,to,g,t,gm,tm){if(busy||PR||S.winner!=null||from!==S.cur||to===from||!S.players[to]||S.players[to].out)return;
  g=(g||[]).map(Number);t=(t||[]).map(Number);gm=Math.max(0,+gm||0);tm=Math.max(0,+tm||0);
  const okNow=()=>g.every(i=>tradable(from).includes(i))&&t.every(i=>tradable(to).includes(i))&&gm<=Math.max(0,S.players[from].money)&&tm<=Math.max(0,S.players[to].money);
- if(!okNow()||(!g.length&&!t.length&&!gm&&!tm))return;
+ if(!g.length&&!t.length&&!gm&&!tm)return;if(!okNow()){log('🤝 Обмен не получился: кому-то не хватает ленокоинов или место уже занято');save();render();return}
  const me=S.players[from],o=S.players[to];log(`🤝 ${me.name} предлагает обмен ${o.name}`);render();
  const ok=await ask(to,'trade',{from,to,give:tradeSum(g,gm),get:tradeSum(t,tm)},done=>{modal(`<div class="mh" style="background:#8e44ad">🤝 ${esc(o.name)}, согласен(на)?</div><div class="mb"><p><b>${esc(me.name)}</b> отдаёт: ${esc(tradeSum(g,gm))}</p><p><b>${esc(o.name)}</b> отдаёт: ${esc(tradeSum(t,tm))}</p><div class="btns"><button class="btn ok" id="tacc">Принять</button><button class="btn bad" id="trej">Отказаться</button></div></div>`);$('ovb').dataset.lock=1;$('tacc').onclick=()=>done(true);$('trej').onclick=()=>done(false)});
- if(ok&&okNow()){g.forEach(i=>S.props[i].owner=to);t.forEach(i=>S.props[i].owner=from);me.money+=tm-gm;o.money+=gm-tm;log(`🤝 Обмен состоялся: ${me.name} ↔ ${o.name}`)}
+ if(ok&&!okNow()){log('🤝 Обмен не получился: кому-то не хватает ленокоинов');save();render();return}
+ if(ok){g.forEach(i=>S.props[i].owner=to);t.forEach(i=>S.props[i].owner=from);me.money+=tm-gm;o.money+=gm-tm;log(`🤝 Обмен состоялся: ${me.name} ↔ ${o.name}`)}
  else log(`${o.name} отказывается от обмена`);
  save();render()}
 function openRules(){modal(`<div class="mh" style="background:#e2479b">Правила</div><div class="mb" style="font-size:14px">
@@ -468,8 +469,8 @@ function render(){if(!S)return;const p=P();
  $('board').innerHTML=h;autofit();$('board').querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>openProp(+e.dataset.c));
  const {status,btn}=turnUI();
  let pl=S.players.map((q,j)=>{const own=Object.keys(S.props).filter(k=>S.props[k].owner===j);
-  return `<div class="pl ${j===S.cur&&S.winner==null?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${S.net?(netOnline(j)?'🟢 ':'⚪ '):''}${esc(q.name)}${q.inJail?' 🔒':''}${q.cards.length?' 🎫':''}${q.shields&&q.shields.length?' 🛡️':''}${q.skip?' ⏸️':''}</span><span class="m" style="${q.money<0?'color:#c62828':''}">${M(q.money)}</span></div>${own.length?`<div class="chips">${own.map(k=>`<button class="chip" data-c="${k}" style="background:${SP[k].g?G[SP[k].g][0]:'#777'};${S.props[k].mort?'opacity:.45;':''}${SP[k].g==='yellow'||SP[k].g==='lb'?'color:#2a2230':''}">${esc(SP[k].name)}${S.props[k].houses?' '+(S.props[k].houses===5?'🏨':'🏠'+S.props[k].houses):''}</button>`).join('')}</div>`:''}`}).join('');
- $('panel').innerHTML=`<div class="box"><div class="cur"><span class="big">${p.token}</span><span class="nmb">${esc(p.name)}</span><span class="money">${M(p.money)}</span></div><div class="status">${status}</div><div class="btns">${btn}</div></div>
+  return `<div class="pl ${j===S.cur&&S.winner==null?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${S.net?(netOnline(j)?'🟢 ':'⚪ '):''}${esc(q.name)}${q.inJail?' 🔒':''}${q.cards.length?' 🎫':''}${q.shields&&q.shields.length?' 🛡️':''}${q.skip?' ⏸️':''}</span><span class="m" style="${q.money<0?'color:#c62828':''}">${S.net?'':M(q.money)}</span></div>${own.length?`<div class="chips">${own.map(k=>`<button class="chip" data-c="${k}" style="background:${SP[k].g?G[SP[k].g][0]:'#777'};${S.props[k].mort?'opacity:.45;':''}${SP[k].g==='yellow'||SP[k].g==='lb'?'color:#2a2230':''}">${esc(SP[k].name)}${S.props[k].houses?' '+(S.props[k].houses===5?'🏨':'🏠'+S.props[k].houses):''}</button>`).join('')}</div>`:''}`}).join('');
+ $('panel').innerHTML=`<div class="box"><div class="cur"><span class="big">${p.token}</span><span class="nmb">${esc(p.name)}</span><span class="money">${S.net?'':M(p.money)}</span></div><div class="status">${status}</div><div class="btns">${btn}</div></div>
  <div class="box"><h3>Игроки</h3>${pl}<div class="btns"><button class="btn sec" data-a="trade">🤝 Обмен</button><button class="btn sec" data-a="rules">Правила</button><button class="btn sec" data-a="new">Новая игра</button>${S.net?'<button class="btn sec" data-a="qr">📱 QR для входа</button>':''}</div></div>
  <div class="box"><h3>Что происходит</h3><div class="log">${S.log.map(m=>`<div>${esc(m)}</div>`).join('')}</div></div>`;
  $('panel').querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>openProp(+e.dataset.c));
@@ -560,7 +561,7 @@ function onHostMsg(cid,m){if(!m||typeof m!=='object')return;NET.cids.add(cid);
 }
 function pushState(){if(NET.mode!=='host'||!NET.tx||!S||!S.net)return;
  const snap=JSON.parse(JSON.stringify(S));delete snap.keys;snap.log=snap.log.slice(0,15);
- for(const cid in NET.who){const pid=NET.who[cid];NET.tx.send(cid,{t:'state',S:snap,you:pid,busy,prompt:PR&&PR.pid===pid?{id:PR.id,kind:PR.kind,data:PR.data}:null,ui:pid===S.cur&&!PR?turnUI():null})}}
+ for(const cid in NET.who){const pid=NET.who[cid];const mine=JSON.parse(JSON.stringify(snap));mine.players.forEach((q,j)=>{if(j!==pid){q.money=null;q.creditor=null}});NET.tx.send(cid,{t:'state',S:mine,you:pid,busy,prompt:PR&&PR.pid===pid?{id:PR.id,kind:PR.kind,data:PR.data}:null,ui:pid===S.cur&&!PR?turnUI():null})}}
 function showJoinQR(){const url=joinURL();modal(`<div class="mh" style="background:#e2479b">📱 Вход с телефона</div><div class="mb"><div class="qrbox">${qrSVG(url)}</div><div class="link">${esc(url)}</div><p style="font-size:14px">Если телефон отключился, просто откройте ссылку снова — игрок вернётся в игру.</p><div class="btns"><button class="btn sec" onclick="closeM()">Закрыть</button></div></div>`)}
 
 /* ---- phone ---- */
@@ -604,7 +605,7 @@ function renderClient(hadPrompt){const el=$('client');
  </div>
  <div class="box"><h3>Моё имущество (${own.length})</h3>${own.length?own.map(i=>{const s=SP[i],pr=S.props[i];return `<div class="prow" data-c="${i}"><span class="sw" style="background:${s.g?G[s.g][0]:'#999'}"></span><span>${s.ic?s.ic+' ':''}${esc(s.name)}</span><span class="r">${pr.mort?'залог':pr.houses===5?'отель':pr.houses?'🏠×'+pr.houses:''}</span></div>`}).join(''):'<p>Пока ничего. Вставай на свободные места и покупай!</p>'}
   ${my&&!busy?'<div class="btns"><button class="btn sec" id="ctrade">🤝 Обмен</button></div>':''}</div>
- <div class="box"><h3>Игроки</h3>${S.players.map((q,j)=>`<div class="pl ${j===S.cur?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${esc(q.name)}${j===pid?' (ты)':''}</span><span class="m">${M(q.money)}</span></div>`).join('')}</div>
+ <div class="box"><h3>Игроки</h3>${S.players.map((q,j)=>`<div class="pl ${j===S.cur?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${esc(q.name)}${j===pid?' (ты)':''}</span><span class="m">${j===pid?M(q.money):''}</span></div>`).join('')}</div>
  <div class="box"><h3>Что происходит</h3><div class="log">${S.log.slice(0,8).map(x=>`<div>${esc(x)}</div>`).join('')}</div><div class="btns"><button class="btn sec" id="crules">Правила</button></div></div>`;
  el.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a;
   if(a==='bankrupt'){modal(`<div class="mh" style="background:#c62828">Банкротство?</div><div class="mb"><p>Ты выбываешь из игры.</p><div class="btns"><button class="btn bad" id="bk">Да</button><button class="btn sec" onclick="closeM()">Отмена</button></div></div>`);$('bk').onclick=()=>{closeM();csend({t:'act',a})};return}
