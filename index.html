@@ -110,6 +110,9 @@ h3{margin:0 0 8px;font-size:15px;color:#9a4f78}
 @keyframes bob{50%{transform:translateY(-12px) rotate(-6deg)}}
 .cboard{--W:min(calc(100vw - 16px),480px,72vh);margin:8px auto 0}
 .bov{position:fixed;inset:0;z-index:15;background:#fdf1f6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:8px;overflow:auto}
+.colpick{display:flex;flex-wrap:wrap;gap:9px;margin:8px 0}.colpick button{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #e6d3de;cursor:pointer;padding:0}.colpick button.on{box-shadow:0 0 0 3px #2a2230;transform:scale(1.12)}.colpick button:disabled{opacity:.15;cursor:default}
+.colpick.sm{gap:6px;margin:2px 0 10px}.colpick.sm button{width:24px;height:24px;border-width:2px}
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-right:2px}
 .netwarn{background:#fff3cd;color:#6b4e00;padding:8px 10px;border-radius:10px;font-size:14px;margin-top:8px}
 </style>
 </head>
@@ -243,7 +246,10 @@ chest:[
  {"x": "Ты прошёл проверку экстрасенсов. Тебе открылись тайны будущего. Получи 200 ленокоинов.", "e": "money", "v": 200}
 ]};
 
-const COLORS=['#e2479b','#2350a8','#22a052','#f39321','#8e44ad','#e03b3b','#16a5a5','#6d4c41'];
+const COLORS=['#e2479b','#e03b3b','#f39321','#f5c400','#22a052','#16a5a5','#7fd1f2','#2350a8','#8e44ad','#ff8fc8','#6d4c41','#2a2230'];
+const COLNAMES={'#e2479b':'розовый','#e03b3b':'красный','#f39321':'оранжевый','#f5c400':'жёлтый','#22a052':'зелёный','#16a5a5':'бирюзовый','#7fd1f2':'голубой','#2350a8':'синий','#8e44ad':'фиолетовый','#ff8fc8':'светло-розовый','#6d4c41':'коричневый','#2a2230':'чёрный'};
+const colPick=(sel,taken,attr='data-col',small)=>`<div class="colpick${small?' sm':''}">${COLORS.map(c=>`<button ${attr}="${c}" title="${COLNAMES[c]}" class="${c===sel?'on':''}" style="background:${c}" ${taken.includes(c)?'disabled':''}></button>`).join('')}</div>`;
+const firstFree=(taken,pref)=>pref&&!taken.includes(pref)?pref:COLORS.find(c=>!taken.includes(c));
 const TOKENS=['💅','🦊','🐱','☕','👑','🌸','🐻','🍕','🚗','🎧','🍓','🦄','⭐','🐸','🍩','🎀','🐶','🧛','🍎'];
 const M=n=>`${n} Ł`;
 const SAVE='lenapoly-v2';
@@ -263,7 +269,7 @@ function toast(m){const d=document.createElement('div');d.className='toast';d.te
 
 /* ---------- setup ---------- */
 let setupN=2;
-let setupData=[{name:'Лена',token:'💅'},{name:'Игрок 2',token:'🦊'}];
+let setupData=[{name:'Лена',token:'💅',color:COLORS[0]},{name:'Игрок 2',token:'🦊',color:COLORS[7]}];
 let setupMode='net';
 function renderSetup(){
  $('app').style.display='none';$('client').style.display='none';$('setup').style.display='block';
@@ -271,22 +277,25 @@ function renderSetup(){
  if(setupMode==='net'){$('setup').innerHTML=`<div class="logo">Ленаполия</div><div class="tabs"><button class="on">💻 Поле на ноутбуке</button><button data-mode="phones">📲 Только телефоны</button><button data-mode="local">🖥 Один экран</button></div>
  <div class="box"><p>Поле будет на этом экране (ноутбук, телевизор), а каждый игрок ходит со своего телефона: открывает ссылку или сканирует QR-код.</p><div class="btns"><button class="btn" id="mkroom">Создать комнату</button></div></div>`;
  bindTabs();$('mkroom').onclick=()=>hostStart(false);return}
- if(setupMode==='phones'){let nm='',tk=TOKENS[0];try{nm=localStorage.getItem('lp-name')||'';tk=localStorage.getItem('lp-tok')||tk}catch(e){}
+ if(setupMode==='phones'){let nm='',tk=TOKENS[0],cl=COLORS[0];try{nm=localStorage.getItem('lp-name')||'';tk=localStorage.getItem('lp-tok')||tk;cl=localStorage.getItem('lp-col')||cl}catch(e){}if(!COLORS.includes(cl))cl=COLORS[0];
   $('setup').innerHTML=`<div class="logo">Ленаполия</div><div class="tabs"><button data-mode="net">💻 Поле на ноутбуке</button><button class="on">📲 Только телефоны</button><button data-mode="local">🖥 Один экран</button></div>
  <div class="box"><p>Без ноутбука: этот телефон создаёт комнату и тоже играет, остальные заходят по QR. Поле видно на каждом телефоне сверху экрана.</p>
  <h3>Как тебя зовут?</h3><div class="row"><input id="hn" maxlength="14" value="${esc(nm)}" placeholder="Имя"></div>
  <h3>Фишка</h3><div class="tokpick">${TOKENS.map(t=>`<button data-t="${t}" class="${t===tk?'on':''}">${t}</button>`).join('')}</div>
+ <h3>Цвет</h3>${colPick(cl,[])}
  <div class="btns"><button class="btn" id="mkroom">Создать комнату</button></div></div>`;
+  $('setup').querySelectorAll('[data-col]').forEach(b=>b.onclick=()=>{$('setup').querySelectorAll('[data-col]').forEach(x=>x.classList.remove('on'));b.classList.add('on')});
   bindTabs();$('setup').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{$('setup').querySelectorAll('[data-t]').forEach(x=>x.classList.remove('on'));b.classList.add('on')});
-  $('mkroom').onclick=()=>{const n=$('hn').value.trim();if(!n){toast('Напиши имя');return}const t=$('setup').querySelector('[data-t].on').dataset.t;try{localStorage.setItem('lp-name',n);localStorage.setItem('lp-tok',t)}catch(e){}hostStart({name:n,token:t})};return}
- while(setupData.length<setupN)setupData.push({name:'Игрок '+(setupData.length+1),token:TOKENS[setupData.length]});
+  $('mkroom').onclick=()=>{const n=$('hn').value.trim();if(!n){toast('Напиши имя');return}const t=$('setup').querySelector('[data-t].on').dataset.t,c=$('setup').querySelector('[data-col].on').dataset.col;try{localStorage.setItem('lp-name',n);localStorage.setItem('lp-tok',t);localStorage.setItem('lp-col',c)}catch(e){}hostStart({name:n,token:t,color:c})};return}
+ while(setupData.length<setupN)setupData.push({name:'Игрок '+(setupData.length+1),token:TOKENS[setupData.length],color:firstFree(setupData.map(x=>x.color))});
  let h=`<div class="logo">Ленаполия</div><div class="tabs"><button data-mode="net">💻 Поле на ноутбуке</button><button data-mode="phones">📲 Только телефоны</button><button class="on">🖥 Один экран</button></div><div class="box"><h3>Сколько игроков?</h3><div class="nsel">`;
  for(let n=2;n<=8;n++)h+=`<button class="${n===setupN?'on':''}" data-n="${n}">${n}</button>`;
  h+=`</div><h3>Имена и фишки</h3>`;
- for(let i=0;i<setupN;i++){h+=`<div class="row"><select data-tk="${i}">${TOKENS.map(t=>`<option ${t===setupData[i].token?'selected':''}>${t}</option>`).join('')}</select><input data-nm="${i}" value="${esc(setupData[i].name)}" maxlength="14"></div>`}
+ for(let i=0;i<setupN;i++){h+=`<div class="row"><select data-tk="${i}">${TOKENS.map(t=>`<option ${t===setupData[i].token?'selected':''}>${t}</option>`).join('')}</select><input data-nm="${i}" value="${esc(setupData[i].name)}" maxlength="14"></div>${colPick(setupData[i].color,setupData.slice(0,setupN).filter((x,j)=>j!==i).map(x=>x.color),'data-sc="'+i+'" data-col',true)}`}
  h+=`<div class="btns"><button class="btn" id="go">Начать игру</button></div></div>`;
  $('setup').innerHTML=h;
  $('setup').querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{setupMode=b.dataset.mode;renderSetup()});addHelp();
+ $('setup').querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{readSetup();setupData[+b.dataset.sc].color=b.dataset.col;renderSetup()});
  $('setup').querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{readSetup();setupN=+b.dataset.n;renderSetup()});
  $('go').onclick=()=>{readSetup();newGame(setupData.slice(0,setupN))};
 }
@@ -303,7 +312,7 @@ function openHelp(){modal(`<div class="mh" style="background:#e2479b">❓ Как
 <div class="btns"><button class="btn sec" id="helprules">Правила игры</button><button class="btn" onclick="closeM()">Понятно</button></div></div>`);$('helprules').onclick=openRules}
 function readSetup(){$('setup').querySelectorAll('[data-nm]').forEach(e=>setupData[+e.dataset.nm].name=e.value.trim()||('Игрок '+(+e.dataset.nm+1)));$('setup').querySelectorAll('[data-tk]').forEach(e=>setupData[+e.dataset.tk].token=e.value)}
 function newGame(list,net){
- S={players:list.map((p,i)=>({name:p.name,token:p.token,color:COLORS[i],money:1500,pos:0,inJail:false,jailTurns:0,cards:[],shields:[],skip:0,out:false,creditor:null})),
+ S={players:list.map((p,i)=>({name:p.name,token:p.token,color:p.color||COLORS[i],money:1500,pos:0,inJail:false,jailTurns:0,cards:[],shields:[],skip:0,out:false,creditor:null})),
   props:{},cur:0,phase:'roll',dbl:0,dice:[3,4],canAgain:false,pendingBuy:null,log:[],winner:null,
   decks:{chance:shuffle([...CARDS.chance.keys()]),chest:shuffle([...CARDS.chest.keys()])},extra:false};
  SP.forEach((s,i)=>{if(s.price)S.props[i]={owner:null,houses:0,mort:false}});
@@ -602,7 +611,7 @@ function setupLocalClient(key){NET.phoneHost=true;CL.local=true;CL.key=key;CL.ro
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)wl()})}
 function showLocalClient(){$('setup').style.display='none';$('app').style.display='none';$('client').style.display='block'}
 async function hostStart(me){NET.bc=!!QS.get('bc');NET.room=rid(5);NET.lobby=[];NET.who={};NET.mode='host';
- if(me){const key='local-'+rid(10);NET.lobby.push({key,name:me.name,token:me.token,cid:'local'});NET.cids.add('local');setupLocalClient(key)}
+ if(me){const key='local-'+rid(10);NET.lobby.push({key,name:me.name,token:me.token,color:me.color,cid:'local'});NET.cids.add('local');setupLocalClient(key)}
  $('setup').innerHTML=`<div class="logo">Ленаполия</div><div class="box"><p>Создаём комнату…</p></div>`;
  if(!NET.bc){const r=await loadNetLibs();if(!r.mq&&!r.peer){$('setup').innerHTML+=`<div class="netwarn">${NETFAIL}</div>`;return}}
  NET.tx=wrapLocal(hostTransport(NET.room,onHostMsg,renderLobby,()=>{$('setup').insertAdjacentHTML('beforeend',`<div class="netwarn">${NETFAIL}</div>`)}));
@@ -618,13 +627,13 @@ function qrSVG(url){try{const q=qrcode(0,'M');q.addData(url);q.make();return q.c
 function renderLobby(){if(S)return;const url=joinURL();
  $('setup').innerHTML=`<div class="logo">Ленаполия</div>
  <div class="box"><h3>Отсканируйте QR или откройте ссылку на телефоне</h3><div class="qrbox">${qrSVG(url)||'<p>QR загружается…</p>'}</div><div class="link">${esc(url)}</div><p style="font-size:14px;color:#7a3d60">Код комнаты: <b style="font-size:20px">${NET.room}</b></p></div>
- <div class="box"><h3>Игроки (${NET.lobby.length}/8)</h3>${NET.lobby.map((l,i)=>`<div class="lob"><span style="font-size:26px">${l.token}</span><span>${esc(l.name)}</span>${l.cid&&NET.cids.has(l.cid)||l.cid==='local'?'':' <small>(нет связи)</small>'}${l.cid==='local'?' <small>(этот телефон)</small>':`<button class="x" data-kick="${i}" title="Убрать">✕</button>`}</div>`).join('')||'<p>Пока никого. Ждём телефоны…</p>'}
+ <div class="box"><h3>Игроки (${NET.lobby.length}/8)</h3>${NET.lobby.map((l,i)=>`<div class="lob" style="border-left:6px solid ${l.color}"><span style="font-size:26px">${l.token}</span><span>${esc(l.name)}</span>${l.cid&&NET.cids.has(l.cid)||l.cid==='local'?'':' <small>(нет связи)</small>'}${l.cid==='local'?' <small>(этот телефон)</small>':`<button class="x" data-kick="${i}" title="Убрать">✕</button>`}</div>`).join('')||'<p>Пока никого. Ждём телефоны…</p>'}
  <div class="btns"><button class="btn" id="startnet" ${NET.lobby.length<2?'disabled':''}>Начать игру</button><button class="btn sec" id="cancelnet">Отмена</button></div></div>`;
- $('startnet').onclick=()=>{if(NET.lobby.length<2)return;const L=NET.lobby;newGame(L.map(l=>({name:l.name,token:l.token,key:l.key})),true);NET.who={};L.forEach((l,i)=>{if(l.cid)NET.who[l.cid]=i});if(NET.phoneHost){S.phoneHost=true;S.localPid=L.findIndex(l=>l.cid==='local');save();showLocalClient()}render()};
+ $('startnet').onclick=()=>{if(NET.lobby.length<2)return;const L=NET.lobby;newGame(L.map(l=>({name:l.name,token:l.token,color:l.color,key:l.key})),true);NET.who={};L.forEach((l,i)=>{if(l.cid)NET.who[l.cid]=i});if(NET.phoneHost){S.phoneHost=true;S.localPid=L.findIndex(l=>l.cid==='local');save();showLocalClient()}render()};
  $('cancelnet').onclick=()=>location.reload();
  $('setup').querySelectorAll('[data-kick]').forEach(b=>b.onclick=()=>{NET.lobby.splice(+b.dataset.kick,1);renderLobby();sendLobby()});
 }
-function sendLobby(){const pl=NET.lobby.map(x=>({name:x.name,token:x.token}));NET.cids.forEach(cid=>{const me=NET.lobby.findIndex(l=>l.cid===cid);NET.tx.send(cid,{t:'lobby',players:pl,me})})}
+function sendLobby(){const pl=NET.lobby.map(x=>({name:x.name,token:x.token,color:x.color}));NET.cids.forEach(cid=>{const me=NET.lobby.findIndex(l=>l.cid===cid);NET.tx.send(cid,{t:'lobby',players:pl,me})})}
 function onHostMsg(cid,m){if(!m||typeof m!=='object')return;NET.cids.add(cid);const wasOff=!NET.seen[cid]||Date.now()-NET.seen[cid]>25000;NET.seen[cid]=Date.now();
  if(m.t==='ping'){if(wasOff&&S)render();return}
  if(m.t==='hello'||m.t==='join'){
@@ -632,7 +641,7 @@ function onHostMsg(cid,m){if(!m||typeof m!=='object')return;NET.cids.add(cid);co
   if(S)return;
   let l=NET.lobby.find(x=>x.key===m.key);
   if(m.t==='join'){if(!l){if(NET.lobby.length>=8){NET.tx.send(cid,{t:'full'});return}l={key:String(m.key).slice(0,40)};NET.lobby.push(l)}
-   l.name=String(m.name||'').trim().slice(0,14)||'Игрок';l.token=TOKENS.includes(m.token)?m.token:TOKENS[0]}
+   l.name=String(m.name||'').trim().slice(0,14)||'Игрок';l.token=TOKENS.includes(m.token)?m.token:TOKENS[0];const tk=NET.lobby.filter(x=>x!==l).map(x=>x.color);l.color=firstFree(tk,COLORS.includes(m.color)?m.color:null)}
   if(l)l.cid=cid;renderLobby();sendLobby();return}
  const pid=NET.who[cid];if(pid==null||!S||S.winner!=null&&m.t!=='answer')return;
  if(m.t==='act'){if(pid!==S.cur)return;const F={roll,again:rollAgain,end:endTurn,buy,decline,payjail:payJail,card:useCard,bankrupt}[m.a];F&&F()}
@@ -673,19 +682,22 @@ function renderClient(hadPrompt){const el=$('client');
  if(!CL.state){
   if(CL.started){el.innerHTML=`<div class="logo" style="font-family:Lobster;color:#e2479b;font-size:48px;text-align:center;margin:20px 0">Ленаполия</div><div class="box"><p>Игра уже началась без этого телефона. Если ты игрок — открой ссылку с того же телефона, с которого входил(а).</p></div>`;return}
   const st={loading:'Загружаем игру…',broker:'Подключаемся к серверу связи…',connecting:'Соединяемся с ноутбуком…',waiting:'Ждём ответ от ноутбука…',closed:'Связь потерялась, переподключаемся…',nohost:'Ноутбук не отвечает. Проверь, что на нём открыта комната '+CL.room+' и страница не закрыта. Попробуй отсканировать QR заново.',neterr:'Нет связи с сервером. Проверь интернет на телефоне.'}[CL.status]||'';
-  const lb=CL.lobby;let name='',tok=null;try{name=localStorage.getItem('lp-name')||'';tok=localStorage.getItem('lp-tok')}catch(e){}
-  const meI=lb?lb.me:-1;const me=meI>=0?lb.players[meI]:null;if(me){name=me.name;tok=me.token}
-  const pjn=$('jn'),ptk=el.querySelector('[data-t].on');if(pjn&&document.activeElement===pjn||pjn&&pjn.dataset.dirty){name=pjn.value;if(ptk)tok=ptk.dataset.t}
+  const lb=CL.lobby;let name='',tok=null,col=null;try{name=localStorage.getItem('lp-name')||'';tok=localStorage.getItem('lp-tok');col=localStorage.getItem('lp-col')}catch(e){}
+  const meI=lb?lb.me:-1;const me=meI>=0?lb.players[meI]:null;if(me){name=me.name;tok=me.token;col=me.color}
+  const pjn=$('jn'),ptk=el.querySelector('[data-t].on'),pcl=el.querySelector('[data-col].on');if(pjn&&document.activeElement===pjn||pjn&&pjn.dataset.dirty){name=pjn.value;if(ptk)tok=ptk.dataset.t;if(pcl)col=pcl.dataset.col}
   const taken=lb?lb.players.filter((p,i)=>i!==meI).map(p=>p.token):[];if(!tok||taken.includes(tok))tok=TOKENS.find(t=>!taken.includes(t));
+  const takenC=lb?lb.players.filter((p,i)=>i!==meI).map(p=>p.color):[];col=firstFree(takenC,COLORS.includes(col)?col:null);
   el.innerHTML=`<div class="logo" style="font-family:Lobster;color:#e2479b;font-size:48px;text-align:center;margin:14px 0">Ленаполия</div>
   ${st?`<div class="netwarn">${esc(st)}</div>`:''}
-  <div class="box"><h3>${me?'Ты в игре! Можно поменять имя или фишку':'Как тебя зовут?'}</h3><div class="row"><input id="jn" maxlength="14" value="${esc(name)}" placeholder="Имя"></div>
-  <h3>Фишка</h3><div class="tokpick">${TOKENS.map(t=>`<button data-t="${t}" class="${t===tok?'on':''}" ${taken.includes(t)?'disabled':''}>${t}</button>`).join('')}</div>
+  <div class="box"><h3>${me?'Ты в игре! Можно поменять имя, фишку или цвет':'Как тебя зовут?'}</h3><div class="row"><input id="jn" maxlength="14" value="${esc(name)}" placeholder="Имя"></div>
+   <h3>Фишка</h3><div class="tokpick">${TOKENS.map(t=>`<button data-t="${t}" class="${t===tok?'on':''}" ${taken.includes(t)?'disabled':''}>${t}</button>`).join('')}</div>
+  <h3>Цвет</h3>${colPick(col,takenC)}
   <div class="btns"><button class="btn" id="jgo" ${!CL.lobby?'disabled':''}>${me?'Сохранить':'Я в игре!'}</button></div></div>
-  ${lb?`<div class="box"><h3>В комнате</h3>${lb.players.map(p=>`<div class="lob"><span style="font-size:24px">${p.token}</span>${esc(p.name)}</div>`).join('')||'<p>Пока никого</p>'}<p style="font-size:14px;color:#7a3d60">${me?'Ждём, когда на ноутбуке нажмут «Начать игру».':''}</p></div>`:''}`;
+  ${lb?`<div class="box"><h3>В комнате</h3>${lb.players.map(p=>`<div class="lob" style="border-left:6px solid ${p.color}"><span style="font-size:24px">${p.token}</span>${esc(p.name)}</div>`).join('')||'<p>Пока никого</p>'}<p style="font-size:14px;color:#7a3d60">${me?'Ждём, когда на ноутбуке нажмут «Начать игру».':''}</p></div>`:''}`;
   el.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{el.querySelectorAll('[data-t]').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('jn').dataset.dirty=1});
+  el.querySelectorAll('[data-col]').forEach(b=>b.onclick=()=>{el.querySelectorAll('[data-col]').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('jn').dataset.dirty=1});
   $('jn').oninput=()=>{$('jn').dataset.dirty=1};if(pjn&&pjn.dataset.dirty)$('jn').dataset.dirty=1;
-  $('jgo').onclick=()=>{const n=$('jn').value.trim();if(!n){toast('Напиши имя');return}const t=(el.querySelector('[data-t].on')||{}).dataset?.t||tok;try{localStorage.setItem('lp-name',n);localStorage.setItem('lp-tok',t)}catch(e){}csend({t:'join',key:CL.key,name:n,token:t});delete $('jn').dataset.dirty;$('jn').blur()};
+  $('jgo').onclick=()=>{const n=$('jn').value.trim();if(!n){toast('Напиши имя');return}const t=(el.querySelector('[data-t].on')||{}).dataset?.t||tok,c=(el.querySelector('[data-col].on')||{}).dataset?.col||col;try{localStorage.setItem('lp-name',n);localStorage.setItem('lp-tok',t);localStorage.setItem('lp-col',c)}catch(e){}csend({t:'join',key:CL.key,name:n,token:t,color:c});delete $('jn').dataset.dirty;$('jn').blur()};
   return}
  const m=CL.state,pid=CL.pid,me=S.players[pid],cur=S.players[S.cur],my=pid===S.cur&&S.winner==null;
  const own=Object.keys(S.props).map(Number).filter(i=>S.props[i].owner===pid);
