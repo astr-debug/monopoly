@@ -93,7 +93,7 @@ const st=(name,price,g,rent)=>({t:'street',name,price,g,rent});
 const TAXI={t:'taxi',name:'Яндекс Такси',price:200,ic:'🚕'};
 const CH={t:'chance',name:'Шанс',ic:'❓'}, CS={t:'chest',name:'Сплетни',ic:'💬'};
 const SP=[
- {t:'go',name:'Старт',sub:'получи $200',ic:'➡️'},
+ {t:'go',name:'Старт',sub:'получи 200 ЛК',ic:'➡️'},
  st('ГАИ',60,'brown',[2,10,30,90,160,250]),
  CS,
  st('1-я Челябинская',60,'brown',[4,20,60,180,320,450]),
@@ -123,7 +123,7 @@ const SP=[
  st('Beermarket',260,'yellow',[22,110,330,800,975,1150]),
  {t:'util',name:'Одноразки',price:150,ic:'🔋'},
  st('Баден-Баден',280,'yellow',[24,120,360,850,1025,1200]),
- {t:'gotojail',name:'В тюрьму!',sub:'без $200',ic:'👮'},
+ {t:'gotojail',name:'В тюрьму!',sub:'без 200 ЛК',ic:'👮'},
  st('Качар',300,'green',[26,130,390,900,1100,1275]),
  st('Актобэ',300,'green',[26,130,390,900,1100,1275]),
  CS,
@@ -134,10 +134,10 @@ const SP=[
  {t:'tax',name:'Новые ноготочки',amt:100,ic:'💅'},
  st('Форкс',400,'blue',[50,200,600,1400,1700,2000]),
 ];
-const PASS=' Если проходишь Старт — получи $200.';
+const PASS=' Если проходишь Старт — получи 200 ленокоинов.';
 const CARDS={
 chance:[
- {x:'Таксист знает короткий путь. Езжай на Старт и получи $200.',e:'move',to:0},
+ {x:'Таксист знает короткий путь. Езжай на Старт и получи 200 ленокоинов.',e:'move',to:0},
  {x:'Захотелось к вампирам. Отправляйся в Форкс.',e:'move',to:39},
  {x:'Пятница! Все в Beermarket.'+PASS,e:'move',to:27},
  {x:'Срочно нужен шопинг. Отправляйся в Kostanay Plaza.'+PASS,e:'move',to:18},
@@ -145,35 +145,36 @@ chance:[
  {x:'Вызываем Яндекс Такси! Иди к ближайшему такси. Если у него есть владелец — заплати ему двойную аренду.',e:'near',k:'taxi'},
  {x:'Спонтанная поездка в Астану.'+PASS,e:'move',to:34},
  {x:'Хочешь курить. Иди к ближайшей клетке IQOS или Одноразки. Если у неё есть владелец — брось кубики и заплати 4× выпавшее. Если владелец владеет обеими карточками, тогда 10×.',e:'near',k:'util'},
- {x:'Нашлись деньги в кармане зимней куртки. Получи $50.',e:'money',v:50},
+ {x:'Нашлись деньги в кармане зимней куртки. Получи 50 ленокоинов.',e:'money',v:50},
  {x:'Остановили на ГАИ без прав. Отправляйся прямо в Тюрьму, Старт не проходишь.',e:'jail'},
  {x:'Выход из тюрьмы бесплатно. Карточку можно оставить себе.',e:'goojf'},
  {x:'Вышли не на той остановке. Вернись на 3 клетки назад.',e:'back'},
- {x:'Ремонт после тусовки: заплати $25 за каждый дом и $100 за каждый отель.',e:'rep',h:25,o:100},
- {x:'Штраф за переход на красный на Майлина. Заплати $15.',e:'money',v:-15},
- {x:'Тебя выбрали старостой группы. Заплати каждому игроку по $50.',e:'payEach',v:50},
- {x:'Пришёл кэшбэк. Получи $150.',e:'money',v:150},
+ {x:'Ремонт после тусовки: заплати 25 ленокоинов за каждый дом и 100 ленокоинов за каждый отель.',e:'rep',h:25,o:100},
+ {x:'Штраф за переход на красный на Майлина. Заплати 15 ленокоинов.',e:'money',v:-15},
+ {x:'Тебя выбрали старостой группы. Заплати каждому игроку по 50 ленокоинов.',e:'payEach',v:50},
+ {x:'Пришёл кэшбэк. Получи 150 ленокоинов.',e:'money',v:150},
 ],
 chest:[
- {x:'Таксист Альбины подвез до дома. Иди на Старт и получи $200.',e:'move',to:0},
- {x:'Банк ошибся в твою пользу. Получи $200.',e:'money',v:200},
- {x:'Маникюр сам себя не сделает. Заплати $50.',e:'money',v:-50},
- {x:'Старые вещи ушли на OLX. Получи $50.',e:'money',v:50},
+ {x:'Таксист Альбины подвез до дома. Иди на Старт и получи 200 ленокоинов.',e:'move',to:0},
+ {x:'Банк ошибся в твою пользу. Получи 200 ленокоинов.',e:'money',v:200},
+ {x:'Маникюр сам себя не сделает. Заплати 50 ленокоинов.',e:'money',v:-50},
+ {x:'Старые вещи ушли на OLX. Получи 50 ленокоинов.',e:'money',v:50},
  {x:'Выход из тюрьмы бесплатно. Карточку можно оставить себе.',e:'goojf'},
  {x:'Слишком громко сплетничали и Серик ругается. Отправляйся прямо в Тюрьму, Старт не проходишь.',e:'jail'},
- {x:'День рождения! Каждый игрок дарит тебе по $10.',e:'collect',v:10},
- {x:'Вернули долг, про который все давно забыли. Получи $100.',e:'money',v:100},
- {x:'Пересдача в КИнЭУ. Заплати $100.',e:'money',v:-100},
- {x:'Мама из Качара привезла еды. Получи $100.',e:'money',v:100},
- {x:'Доставка еды в 3 часа ночи. Заплати $50.',e:'money',v:-50},
- {x:'Пост набрал кучу лайков, пришла реклама. Получи $10.',e:'money',v:10},
- {x:'Премия на работе. Получи $25.',e:'money',v:25},
- {x:'Генеральная уборка: заплати $40 за каждый дом и $115 за каждый отель.',e:'rep',h:40,o:115},
- {x:'Нашлась скидка в Dodo. Получи $20.',e:'money',v:20},
- {x:'Закончились конфеты «Баян Сулу». Купи ещё: заплати $20.',e:'money',v:-20},
+ {x:'День рождения! Каждый игрок дарит тебе по 10 ленокоинов.',e:'collect',v:10},
+ {x:'Вернули долг, про который все давно забыли. Получи 100 ленокоинов.',e:'money',v:100},
+ {x:'Пересдача в КИнЭУ. Заплати 100 ленокоинов.',e:'money',v:-100},
+ {x:'Мама из Качара привезла еды. Получи 100 ленокоинов.',e:'money',v:100},
+ {x:'Доставка еды в 3 часа ночи. Заплати 50 ленокоинов.',e:'money',v:-50},
+ {x:'Пост набрал кучу лайков, пришла реклама. Получи 10 ленокоинов.',e:'money',v:10},
+ {x:'Премия на работе. Получи 25 ленокоинов.',e:'money',v:25},
+ {x:'Генеральная уборка: заплати 40 ленокоинов за каждый дом и 115 ленокоинов за каждый отель.',e:'rep',h:40,o:115},
+ {x:'Нашлась скидка в Dodo. Получи 20 ленокоинов.',e:'money',v:20},
+ {x:'Закончились конфеты «Баян Сулу». Купи ещё: заплати 20 ленокоинов.',e:'money',v:-20},
 ]};
 const COLORS=['#e2479b','#2350a8','#22a052','#f39321','#8e44ad','#e03b3b','#16a5a5','#6d4c41'];
 const TOKENS=['💅','🦊','🐱','☕','👑','🌸','🐻','🍕','🚗','🎧','🍓','🦄','⭐','🐸','🍩','🎀','🐶','🧛','🍎'];
+const M=n=>`${n} ЛК`;
 const SAVE='lenapoly-v1';
 let S=null,busy=false,T=null;
 const $=id=>document.getElementById(id);
@@ -218,7 +219,7 @@ function newGame(list){
 function pay(pi,amt,to){S.players[pi].money-=amt;if(to!=null)S.players[to].money+=amt;if(S.players[pi].money<0)S.players[pi].creditor=(to==null?null:to)}
 
 /* ---------- movement ---------- */
-async function stepMove(n){const p=P();for(let k=0;k<n;k++){p.pos=(p.pos+1)%40;if(p.pos===0){p.money+=200;log(`${p.name} проходит Старт: +$200`)}render();await sleep(130)}}
+async function stepMove(n){const p=P();for(let k=0;k<n;k++){p.pos=(p.pos+1)%40;if(p.pos===0){p.money+=200;log(`${p.name} проходит Старт: +200 ЛК`)}render();await sleep(130)}}
 async function moveTo(t){await stepMove((t-P().pos+40)%40)}
 function sendToJail(pi){const p=S.players[pi];p.pos=10;p.inJail=true;p.jailTurns=0;S.canAgain=false;S.dbl=0;log(`${p.name} отправляется в Тюрьму 🔒`)}
 
@@ -229,11 +230,11 @@ function rentOf(i,sum,opt={}){const s=SP[i],pr=S.props[i],o=pr.owner;if(pr.mort)
 
 async function land(sum,opt={}){const p=P(),i=p.pos,s=SP[i];
  if(s.price){const pr=S.props[i];
-  if(pr.owner===null){S.pendingBuy=i;log(`${p.name} на «${s.name}» — можно купить за $${s.price}`)}
+  if(pr.owner===null){S.pendingBuy=i;log(`${p.name} на «${s.name}» — можно купить за ${M(s.price)}`)}
   else if(pr.owner!==S.cur){if(pr.mort)log(`«${s.name}» в залоге — аренды нет`);
-   else{const r=rentOf(i,sum,opt);pay(S.cur,r,pr.owner);log(`${p.name} платит ${S.players[pr.owner].name} $${r} за «${s.name}»`)}}
+   else{const r=rentOf(i,sum,opt);pay(S.cur,r,pr.owner);log(`${p.name} платит ${S.players[pr.owner].name} ${M(r)} за «${s.name}»`)}}
   return}
- if(s.t==='tax'){pay(S.cur,s.amt,null);log(`${s.name}: ${p.name} платит $${s.amt}`)}
+ if(s.t==='tax'){pay(S.cur,s.amt,null);log(`${s.name}: ${p.name} платит ${M(s.amt)}`)}
  else if(s.t==='chance'||s.t==='chest')await drawCard(s.t);
  else if(s.t==='gotojail')sendToJail(S.cur);
 }
@@ -249,7 +250,7 @@ async function drawCard(kind){const id=S.decks[kind].shift(),c=CARDS[kind][id];
   case 'jail':sendToJail(S.cur);break;
   case 'goojf':p.cards.push(kind);break;
   case 'back':p.pos=(p.pos+37)%40;render();await sleep(200);await land(S.dice[0]+S.dice[1]);break;
-  case 'rep':{let h=0,o=0;Object.values(S.props).forEach(pr=>{if(pr.owner===S.cur){if(pr.houses===5)o++;else h+=pr.houses}});const v=h*c.h+o*c.o;if(v)pay(S.cur,v,null);log(`${p.name} платит $${v} за ремонт`);break}
+  case 'rep':{let h=0,o=0;Object.values(S.props).forEach(pr=>{if(pr.owner===S.cur){if(pr.houses===5)o++;else h+=pr.houses}});const v=h*c.h+o*c.o;if(v)pay(S.cur,v,null);log(`${p.name} платит ${M(v)} за ремонт`);break}
   case 'payEach':S.players.forEach((q,j)=>{if(j!==S.cur&&!q.out)pay(S.cur,c.v,j)});break;
   case 'collect':S.players.forEach((q,j)=>{if(j!==S.cur&&!q.out)pay(j,c.v,S.cur)});break;
  }
@@ -261,16 +262,16 @@ async function roll(){if(busy||S.phase!=='roll'||S.pendingBuy!=null)return;const
  log(`${p.name} бросает ${a}+${b}${d?' — дубль!':''}`);
  if(p.inJail){
   if(d){p.inJail=false;p.jailTurns=0;log(`Дубль — ${p.name} выходит из тюрьмы`);S.phase='moving';await stepMove(a+b);await land(a+b)}
-  else{p.jailTurns++;if(p.jailTurns>=3){pay(S.cur,50,null);p.inJail=false;p.jailTurns=0;log(`Третья попытка — ${p.name} платит $50 и выходит`);S.phase='moving';await stepMove(a+b);await land(a+b)}else log(`Не дубль, ${p.name} остаётся в тюрьме`)}
+  else{p.jailTurns++;if(p.jailTurns>=3){pay(S.cur,50,null);p.inJail=false;p.jailTurns=0;log(`Третья попытка — ${p.name} платит 50 ЛК и выходит`);S.phase='moving';await stepMove(a+b);await land(a+b)}else log(`Не дубль, ${p.name} остаётся в тюрьме`)}
   S.canAgain=false;S.phase='action';busy=false;save();render();return}
  if(d){S.dbl++;if(S.dbl===3){log('Три дубля подряд — это подозрительно!');sendToJail(S.cur);S.phase='action';busy=false;save();render();return}}
  S.canAgain=d;S.phase='moving';await stepMove(a+b);await land(a+b);
  if(P().inJail)S.canAgain=false;S.phase='action';busy=false;save();render();
 }
 function rollAgain(){if(busy)return;S.phase='roll';S.canAgain=false;roll()}
-function payJail(){const p=P();if(p.money<50)return;pay(S.cur,50,null);p.inJail=false;p.jailTurns=0;log(`${p.name} платит $50 и выходит из тюрьмы`);save();render()}
+function payJail(){const p=P();if(p.money<50)return;pay(S.cur,50,null);p.inJail=false;p.jailTurns=0;log(`${p.name} платит 50 ЛК и выходит из тюрьмы`);save();render()}
 function useCard(){const p=P();const k=p.cards.pop();if(!k)return;S.decks[k].push(CARDS[k].findIndex(c=>c.e==='goojf'));p.inJail=false;p.jailTurns=0;log(`${p.name} использует карточку «Выход из тюрьмы»`);save();render()}
-function buy(){const i=S.pendingBuy,p=P(),s=SP[i];if(i==null||p.money<s.price)return;pay(S.cur,s.price,null);S.props[i].owner=S.cur;S.pendingBuy=null;log(`${p.name} покупает «${s.name}» за $${s.price}`);save();render()}
+function buy(){const i=S.pendingBuy,p=P(),s=SP[i];if(i==null||p.money<s.price)return;pay(S.cur,s.price,null);S.props[i].owner=S.cur;S.pendingBuy=null;log(`${p.name} покупает «${s.name}» за ${M(s.price)}`);save();render()}
 function decline(){const s=SP[S.pendingBuy];S.pendingBuy=null;log(`${P().name} не покупает «${s.name}»`);save();render()}
 function endTurn(){if(busy||S.pendingBuy!=null)return;if(P().money<0){toast('Сначала погаси долг');return}
  S.dbl=0;S.canAgain=false;nextPlayer();save();render()}
@@ -295,28 +296,28 @@ const unmortCost=i=>Math.ceil(SP[i].price*0.55);
 function canUnmort(i){const pr=S.props[i];return pr.owner===S.cur&&pr.mort&&P().money>=unmortCost(i)}
 function doProp(act,i){if(busy)return;const s=SP[i],pr=S.props[i],p=P();
  if(act==='build'&&canBuild(i)){pay(S.cur,hcost(i),null);pr.houses++;log(`${p.name} строит ${pr.houses===5?'отель':'дом'} на «${s.name}»`)}
- if(act==='sell'&&canSell(i)){pr.houses--;p.money+=hcost(i)/2;log(`${p.name} продаёт постройку на «${s.name}» (+$${hcost(i)/2})`)}
- if(act==='mort'&&canMort(i)){pr.mort=true;p.money+=s.price/2;log(`${p.name} закладывает «${s.name}» (+$${s.price/2})`)}
- if(act==='unmort'&&canUnmort(i)){pay(S.cur,unmortCost(i),null);pr.mort=false;log(`${p.name} выкупает «${s.name}» (−$${unmortCost(i)})`)}
+ if(act==='sell'&&canSell(i)){pr.houses--;p.money+=hcost(i)/2;log(`${p.name} продаёт постройку на «${s.name}» (+${M(hcost(i)/2)})`)}
+ if(act==='mort'&&canMort(i)){pr.mort=true;p.money+=s.price/2;log(`${p.name} закладывает «${s.name}» (+${M(s.price/2)})`)}
+ if(act==='unmort'&&canUnmort(i)){pay(S.cur,unmortCost(i),null);pr.mort=false;log(`${p.name} выкупает «${s.name}» (−${M(unmortCost(i))})`)}
  save();render();openProp(i)}
 
 /* ---------- modals ---------- */
 function modal(html){$('ov').innerHTML=`<div class="ov" id="ovb"><div class="md">${html}</div></div>`;$('ovb').onclick=e=>{if(e.target.id==='ovb'&&!$('ovb').dataset.lock)closeM()}}
 function closeM(){$('ov').innerHTML=''}
 function showCard(kind,text){return new Promise(res=>{modal(`<div class="mh" style="background:${kind==='chance'?'#f39321':'#e2479b'}">${kind==='chance'?'❓ Шанс':'💬 Сплетни'}</div><div class="mb"><div class="card-t">${esc(text)}</div><div class="btns"><button class="btn" id="cok">Ок</button></div></div>`);$('ovb').dataset.lock=1;$('cok').onclick=()=>{closeM();res()}})}
-const INFO={go:'Каждый раз, когда проходишь или встаёшь на Старт, получаешь $200.',jail:'Если просто встал(а) сюда — ты в гостях. Из тюрьмы можно выйти: заплатить $50, использовать карточку или выбросить дубль (три попытки, после третьей платишь $50).',
- park:'Ничего не происходит. Просто отдыхай на лавочке.',gotojail:'Сразу отправляешься в Тюрьму, Старт не проходишь и $200 не получаешь.',
+const INFO={go:'Каждый раз, когда проходишь или встаёшь на Старт, получаешь 200 ленокоинов.',jail:'Если просто встал(а) сюда — ты в гостях. Из тюрьмы можно выйти: заплатить 50 ленокоинов, использовать карточку или выбросить дубль (три попытки, после третьей платишь 50 ленокоинов).',
+ park:'Ничего не происходит. Просто отдыхай на лавочке.',gotojail:'Сразу отправляешься в Тюрьму, Старт не проходишь и 200 ленокоинов не получаешь.',
  chance:'Тяни карточку «Шанс».',chest:'Тяни карточку «Сплетни».'};
 function openProp(i){const s=SP[i];
- if(!s.price){let t=INFO[s.t]||'';if(s.t==='tax')t=`Заплати банку $${s.amt}.`;modal(`<div class="mh" style="background:#9a4f78">${s.ic} ${esc(s.name)}</div><div class="mb">${t}<div class="btns"><button class="btn sec" onclick="closeM()">Закрыть</button></div></div>`);return}
+ if(!s.price){let t=INFO[s.t]||'';if(s.t==='tax')t=`Заплати банку ${M(s.amt)}.`;modal(`<div class="mh" style="background:#9a4f78">${s.ic} ${esc(s.name)}</div><div class="mb">${t}<div class="btns"><button class="btn sec" onclick="closeM()">Закрыть</button></div></div>`);return}
  const pr=S.props[i],own=pr.owner!=null?S.players[pr.owner]:null;let body='',col='#555';
- if(s.t==='street'){col=G[s.g][0];const r=s.rent;body=`<table><tr><td>Аренда</td><td>$${r[0]}</td></tr><tr><td>Вся группа, без домов</td><td>$${r[0]*2}</td></tr>${[1,2,3,4].map(n=>`<tr><td>С ${n} ${n===1?'домом':'домами'}</td><td>$${r[n]}</td></tr>`).join('')}<tr><td>С отелем</td><td>$${r[5]}</td></tr></table><p>Дом стоит $${G[s.g][1]}, отель — $${G[s.g][1]} и 4 дома.<br>Залог: $${s.price/2}</p>`}
- else if(s.t==='taxi'){col='#f5d327';body=`<table><tr><td>1 такси</td><td>$25</td></tr><tr><td>2 такси</td><td>$50</td></tr><tr><td>3 такси</td><td>$100</td></tr><tr><td>4 такси</td><td>$200</td></tr></table><p>Залог: $100</p>`}
- else{col='#7a7a7a';body=`<p>Одна из двух — аренда 4× сумма на кубиках.<br>Обе — 10× сумма на кубиках.</p><p>Залог: $75</p>`}
- let st2=`<p><b>Цена:</b> $${s.price}<br><b>Владелец:</b> ${own?esc(own.token+' '+own.name):'банк'}${pr.mort?' <b>(в залоге)</b>':''}${s.t==='street'&&pr.houses?`<br><b>Построено:</b> ${pr.houses===5?'отель':pr.houses+' дом.'}`:''}</p>`;
+ if(s.t==='street'){col=G[s.g][0];const r=s.rent;body=`<table><tr><td>Аренда</td><td>${M(r[0])}</td></tr><tr><td>Вся группа, без домов</td><td>${M(r[0]*2)}</td></tr>${[1,2,3,4].map(n=>`<tr><td>С ${n} ${n===1?'домом':'домами'}</td><td>${M(r[n])}</td></tr>`).join('')}<tr><td>С отелем</td><td>${M(r[5])}</td></tr></table><p>Дом стоит ${M(G[s.g][1])}, отель — ${M(G[s.g][1])} и 4 дома.<br>Залог: ${M(s.price/2)}</p>`}
+ else if(s.t==='taxi'){col='#f5d327';body=`<table><tr><td>1 такси</td><td>25 ЛК</td></tr><tr><td>2 такси</td><td>50 ЛК</td></tr><tr><td>3 такси</td><td>100 ЛК</td></tr><tr><td>4 такси</td><td>200 ЛК</td></tr></table><p>Залог: 100 ЛК</p>`}
+ else{col='#7a7a7a';body=`<p>Одна из двух — аренда 4× сумма на кубиках.<br>Обе — 10× сумма на кубиках.</p><p>Залог: 75 ЛК</p>`}
+ let st2=`<p><b>Цена:</b> ${M(s.price)}<br><b>Владелец:</b> ${own?esc(own.token+' '+own.name):'банк'}${pr.mort?' <b>(в залоге)</b>':''}${s.t==='street'&&pr.houses?`<br><b>Построено:</b> ${pr.houses===5?'отель':pr.houses+' дом.'}`:''}</p>`;
  let b='';if(pr.owner===S.cur&&!busy&&S.winner==null){
-  if(s.t==='street')b+=`<button class="btn ok" ${canBuild(i)?'':'disabled'} data-pa="build">Построить${pr.houses===4?' отель':' дом'} −$${hcost(i)}</button><button class="btn sec" ${canSell(i)?'':'disabled'} data-pa="sell">Продать постройку +$${hcost(i)/2}</button>`;
-  b+=pr.mort?`<button class="btn" ${canUnmort(i)?'':'disabled'} data-pa="unmort">Выкупить −$${unmortCost(i)}</button>`:`<button class="btn sec" ${canMort(i)?'':'disabled'} data-pa="mort">Заложить +$${s.price/2}</button>`}
+  if(s.t==='street')b+=`<button class="btn ok" ${canBuild(i)?'':'disabled'} data-pa="build">Построить${pr.houses===4?' отель':' дом'} −${M(hcost(i))}</button><button class="btn sec" ${canSell(i)?'':'disabled'} data-pa="sell">Продать постройку +${M(hcost(i)/2)}</button>`;
+  b+=pr.mort?`<button class="btn" ${canUnmort(i)?'':'disabled'} data-pa="unmort">Выкупить −${M(unmortCost(i))}</button>`:`<button class="btn sec" ${canMort(i)?'':'disabled'} data-pa="mort">Заложить +${M(s.price/2)}</button>`}
  modal(`<div class="mh" style="background:${col};${s.t==='taxi'||s.g==='yellow'||s.g==='lb'?'color:#2a2230':''}">${s.ic?s.ic+' ':''}${esc(s.name)}</div><div class="mb">${st2}${body}<div class="btns">${b}<button class="btn sec" onclick="closeM()">Закрыть</button></div>${s.t==='street'&&pr.owner===S.cur?'<p style="font-size:12px;color:#888">Строить можно, когда у тебя вся группа и нет залогов. Дома ставятся равномерно.</p>':''}</div>`);
  $('ov').querySelectorAll('[data-pa]').forEach(e=>e.onclick=()=>doProp(e.dataset.pa,i));
 }
@@ -327,18 +328,18 @@ function drawTrade(){const me=P();let h=`<div class="mh" style="background:#8e44
   modal(h);$('ov').querySelectorAll('[data-tp]').forEach(e=>e.onclick=()=>{T.to=+e.dataset.tp;drawTrade()});return}
  const o=S.players[T.to],a=tradable(S.cur),b=tradable(T.to);
  const lst=(arr,nm)=>arr.length?arr.map(i=>`<label><input type="checkbox" name="${nm}" value="${i}"> ${esc(SP[i].name)}${S.props[i].mort?' (залог)':''}</label>`).join(''):'<i>нечего</i>';
- h+=`<div class="tr-col"><h3>${esc(me.name)} отдаёт</h3>${lst(a,'g')}<label>Деньги, $ (есть $${me.money})<input type="number" id="gm" min="0" value="0"></label></div>
- <div class="tr-col"><h3>${esc(o.name)} отдаёт</h3>${lst(b,'t')}<label>Деньги, $ (есть $${o.money})<input type="number" id="tm" min="0" value="0"></label></div>
+ h+=`<div class="tr-col"><h3>${esc(me.name)} отдаёт</h3>${lst(a,'g')}<label>Ленокоины (есть ${M(me.money)})<input type="number" id="gm" min="0" value="0"></label></div>
+ <div class="tr-col"><h3>${esc(o.name)} отдаёт</h3>${lst(b,'t')}<label>Ленокоины (есть ${M(o.money)})<input type="number" id="tm" min="0" value="0"></label></div>
  <div class="btns"><button class="btn" id="tprop">Предложить</button><button class="btn sec" onclick="closeM()">Отмена</button></div></div>`;
  modal(h);$('tprop').onclick=()=>{const g=[...$('ov').querySelectorAll('input[name=g]:checked')].map(e=>+e.value),t=[...$('ov').querySelectorAll('input[name=t]:checked')].map(e=>+e.value);
   const gm=Math.max(0,parseInt($('gm').value)||0),tm=Math.max(0,parseInt($('tm').value)||0);
   if(!g.length&&!t.length&&!gm&&!tm){toast('Выбери, что меняем');return}if(gm>Math.max(0,me.money)||tm>Math.max(0,o.money)){toast('Не хватает денег');return}
-  const sum=(arr,m)=>[...arr.map(i=>SP[i].name),...(m?['$'+m]:[])].join(', ')||'ничего';
+  const sum=(arr,m)=>[...arr.map(i=>SP[i].name),...(m?[M(m)]:[])].join(', ')||'ничего';
   modal(`<div class="mh" style="background:#8e44ad">🤝 ${esc(o.name)}, согласен(на)?</div><div class="mb"><p><b>${esc(me.name)}</b> отдаёт: ${esc(sum(g,gm))}</p><p><b>${esc(o.name)}</b> отдаёт: ${esc(sum(t,tm))}</p><div class="btns"><button class="btn ok" id="tacc">Принять</button><button class="btn bad" id="trej">Отказаться</button></div></div>`);
   $('tacc').onclick=()=>{g.forEach(i=>S.props[i].owner=T.to);t.forEach(i=>S.props[i].owner=S.cur);me.money+=tm-gm;o.money+=gm-tm;log(`🤝 Обмен: ${me.name} ↔ ${o.name}`);closeM();save();render()};
   $('trej').onclick=()=>{log(`${o.name} отказывается от обмена`);closeM();render()}}}
 function openRules(){modal(`<div class="mh" style="background:#e2479b">Правила</div><div class="mb" style="font-size:14px">
-<p>У каждого $1500. Бросай кубики, ходи по полю, покупай места и бери аренду с тех, кто на них встаёт.</p>
+<p>У каждого 1500 ленокоинов. Бросай кубики, ходи по полю, покупай места и бери аренду с тех, кто на них встаёт.</p>
 <p><b>Дубль</b> — ходишь ещё раз. Три дубля подряд — в Тюрьму.</p>
 <p><b>Своя группа целиком</b> — аренда без домов удваивается, можно строить дома (до 4) и отель. Строить надо равномерно.</p>
 <p><b>Такси</b>: чем больше их у тебя, тем дороже аренда. <b>IQOS и Одноразки</b>: аренда зависит от кубиков.</p>
@@ -357,8 +358,8 @@ const fit=n=>{const L=Math.max(...n.split(/[\s-]+/).map(w=>w.length));return L>8
 function cellHTML(i){const s=SP[i],[r,c]=gp(i),side=i%10===0?'corner':i<10?'b':i<20?'l':i<30?'t':'r',pr=S.props[i];
  let inner,style=`grid-row:${r};grid-column:${c};`,cls='cell '+(side==='corner'?'':side);
  if(side==='corner')inner=`<div class="cn"><div class="ic">${s.ic}</div><div class="nm">${s.name}</div>${s.sub?`<div class="sb">${s.sub}</div>`:''}</div>`;
- else if(s.t==='street'){const h=pr.houses;inner=`<div class="bar" style="background:${G[s.g][0]}">${h===5?'🏨':'🏠'.repeat(h)}</div><div class="txt"><div class="nm" ${side==='l'||side==='r'?'':fit(s.name)}>${s.name}</div><div class="pr">${pr.mort?'залог':'$'+s.price}</div></div>`}
- else inner=`<div class="txt"><div class="ic2">${s.ic}</div><div class="nm" ${side==='l'||side==='r'?'':fit(s.name)}>${s.name}</div><div class="pr">${s.price?(pr.mort?'залог':'$'+s.price):s.amt?'$'+s.amt:''}</div></div>`;
+ else if(s.t==='street'){const h=pr.houses;inner=`<div class="bar" style="background:${G[s.g][0]}">${h===5?'🏨':'🏠'.repeat(h)}</div><div class="txt"><div class="nm" ${side==='l'||side==='r'?'':fit(s.name)}>${s.name}</div><div class="pr">${pr.mort?'залог':M(s.price)}</div></div>`}
+ else inner=`<div class="txt"><div class="ic2">${s.ic}</div><div class="nm" ${side==='l'||side==='r'?'':fit(s.name)}>${s.name}</div><div class="pr">${s.price?(pr.mort?'залог':M(s.price)):s.amt?M(s.amt):''}</div></div>`;
  if(pr&&pr.owner!=null){style+=`box-shadow:inset 0 0 0 3px ${S.players[pr.owner].color};`;if(pr.mort)cls+=' mort'}
  const tk=S.players.filter(p=>!p.out&&p.pos===i).map(p=>`<div class="tk" style="border-color:${p.color}">${p.token}</div>`).join('');
  return `<div class="${cls}" style="${style}" data-c="${i}">${inner}${tk?`<div class="toks">${tk}</div>`:''}</div>`}
@@ -369,13 +370,13 @@ function render(){if(!S)return;const p=P();
  let status='',btn='';
  if(S.winner!=null){status=`🏆 ${esc(S.players[S.winner].name)} побеждает в Ленаполии!`;btn=`<button class="btn" data-a="new">Новая игра</button>`}
  else if(busy){status='Ходим…'}
- else if(S.pendingBuy!=null){const s=SP[S.pendingBuy];status=`«${esc(s.name)}» никому не принадлежит.`;btn=`<button class="btn ok" data-a="buy" ${p.money<s.price?'disabled':''}>Купить за $${s.price}</button><button class="btn sec" data-a="decline">Не покупать</button>`}
- else if(p.money<0){status=`Долг $${-p.money}. Продай дома или заложи места — нажми на свои клетки. Или объяви банкротство.`;btn=`<button class="btn bad" data-a="bankrupt">Объявить банкротство</button>`}
- else if(S.phase==='roll'){if(p.inJail){status=`В тюрьме (попытка ${p.jailTurns+1} из 3).`;btn=`<button class="btn" data-a="roll">Бросить на дубль</button><button class="btn sec" data-a="payjail" ${p.money<50?'disabled':''}>Заплатить $50</button>${p.cards.length?'<button class="btn ok" data-a="card">Карточка выхода</button>':''}`}else{btn=`<button class="btn" data-a="roll">🎲 Бросить кубики</button>`}}
+ else if(S.pendingBuy!=null){const s=SP[S.pendingBuy];status=`«${esc(s.name)}» никому не принадлежит.`;btn=`<button class="btn ok" data-a="buy" ${p.money<s.price?'disabled':''}>Купить за ${M(s.price)}</button><button class="btn sec" data-a="decline">Не покупать</button>`}
+ else if(p.money<0){status=`Долг ${M(-p.money)}. Продай дома или заложи места — нажми на свои клетки. Или объяви банкротство.`;btn=`<button class="btn bad" data-a="bankrupt">Объявить банкротство</button>`}
+ else if(S.phase==='roll'){if(p.inJail){status=`В тюрьме (попытка ${p.jailTurns+1} из 3).`;btn=`<button class="btn" data-a="roll">Бросить на дубль</button><button class="btn sec" data-a="payjail" ${p.money<50?'disabled':''}>Заплатить 50 ЛК</button>${p.cards.length?'<button class="btn ok" data-a="card">Карточка выхода</button>':''}`}else{btn=`<button class="btn" data-a="roll">🎲 Бросить кубики</button>`}}
  else if(S.phase==='action'){if(S.canAgain){status='Дубль! Ходи ещё раз.';btn=`<button class="btn" data-a="again">🎲 Бросить ещё раз</button>`}else btn=`<button class="btn" data-a="end">Закончить ход</button>`}
  let pl=S.players.map((q,j)=>{const own=Object.keys(S.props).filter(k=>S.props[k].owner===j);
-  return `<div class="pl ${j===S.cur&&S.winner==null?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${esc(q.name)}${q.inJail?' 🔒':''}${q.cards.length?' 🎫':''}</span><span class="m" style="${q.money<0?'color:#c62828':''}">$${q.money}</span></div>${own.length?`<div class="chips">${own.map(k=>`<button class="chip" data-c="${k}" style="background:${SP[k].g?G[SP[k].g][0]:'#777'};${S.props[k].mort?'opacity:.45;':''}${SP[k].g==='yellow'||SP[k].g==='lb'?'color:#2a2230':''}">${esc(SP[k].name)}${S.props[k].houses?' '+(S.props[k].houses===5?'🏨':'🏠'+S.props[k].houses):''}</button>`).join('')}</div>`:''}`}).join('');
- $('panel').innerHTML=`<div class="box"><div class="cur"><span class="big">${p.token}</span><span class="nmb">${esc(p.name)}</span><span class="money">$${p.money}</span></div><div class="status">${status}</div><div class="btns">${btn}</div></div>
+  return `<div class="pl ${j===S.cur&&S.winner==null?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${esc(q.name)}${q.inJail?' 🔒':''}${q.cards.length?' 🎫':''}</span><span class="m" style="${q.money<0?'color:#c62828':''}">${M(q.money)}</span></div>${own.length?`<div class="chips">${own.map(k=>`<button class="chip" data-c="${k}" style="background:${SP[k].g?G[SP[k].g][0]:'#777'};${S.props[k].mort?'opacity:.45;':''}${SP[k].g==='yellow'||SP[k].g==='lb'?'color:#2a2230':''}">${esc(SP[k].name)}${S.props[k].houses?' '+(S.props[k].houses===5?'🏨':'🏠'+S.props[k].houses):''}</button>`).join('')}</div>`:''}`}).join('');
+ $('panel').innerHTML=`<div class="box"><div class="cur"><span class="big">${p.token}</span><span class="nmb">${esc(p.name)}</span><span class="money">${M(p.money)}</span></div><div class="status">${status}</div><div class="btns">${btn}</div></div>
  <div class="box"><h3>Игроки</h3>${pl}<div class="btns"><button class="btn sec" data-a="trade">🤝 Обмен</button><button class="btn sec" data-a="rules">Правила</button><button class="btn sec" data-a="new">Новая игра</button></div></div>
  <div class="box"><h3>Что происходит</h3><div class="log">${S.log.map(m=>`<div>${esc(m)}</div>`).join('')}</div></div>`;
  $('panel').querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>openProp(+e.dataset.c));
