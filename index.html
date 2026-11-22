@@ -5,42 +5,53 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ленаполия</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Lobster&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lobster&family=Oswald:wght@500;600;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
 html,body{margin:0}
 body{font-family:Rubik,system-ui,sans-serif;background:#fdf1f6;color:#2a2230;padding:8px}
 button{font-family:inherit}
 #app{max-width:1180px;margin:0 auto;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:flex-start}
-.board{--W:min(calc(100vw - 16px),88vh,760px);width:var(--W);height:var(--W);display:grid;
+.board{--W:min(calc(100vw - 16px),88vh,760px);--u:calc(var(--W)/12.2);--bg:#cfe6cf;width:var(--W);height:var(--W);display:grid;
  grid-template-columns:1.6fr repeat(9,1fr) 1.6fr;grid-template-rows:1.6fr repeat(9,1fr) 1.6fr;
- background:#2b2b2b;border:2px solid #2b2b2b;gap:1px;border-radius:6px;overflow:hidden;flex:0 0 auto}
-.cell{position:relative;background:#fbfdf8;display:flex;overflow:hidden;cursor:pointer;font-size:calc(var(--W)/66);line-height:1.08}
-.cell.b{flex-direction:column}.cell.t{flex-direction:column-reverse}.cell.l{flex-direction:row-reverse}.cell.r{flex-direction:row}
-.bar{flex:0 0 22%;display:flex;align-items:center;justify-content:center;font-size:calc(var(--W)/95);letter-spacing:-1px;overflow:hidden}
-.cell.l .bar,.cell.r .bar{flex-direction:column;letter-spacing:0;line-height:1}
-.txt{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;padding:2px 1px;overflow-wrap:break-word;hyphens:auto}
-.cell.l .txt,.cell.r .txt{justify-content:center;gap:2px}
-.nm{font-weight:500;width:100%;overflow-wrap:anywhere}
-.pr{font-weight:700;color:#555}
-.ic2{font-size:calc(var(--W)/40)}
-.cn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2px;background:#fff4f9}
-.cn .ic{font-size:calc(var(--W)/18)}
-.cn .nm{font-weight:700;font-size:calc(var(--W)/52)}
-.cn .sb{font-size:calc(var(--W)/72);color:#666}
-.cell.mort .txt{opacity:.45}
-.toks{position:absolute;left:0;right:0;bottom:1px;display:flex;flex-wrap:wrap;justify-content:center;gap:1px;pointer-events:none}
-.tk{width:calc(var(--W)/30);height:calc(var(--W)/30);border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:calc(var(--W)/48);border:2px solid;box-shadow:0 1px 3px rgba(0,0,0,.35)}
-.center{grid-area:2/2/11/11;background:radial-gradient(circle at 50% 40%,#fff9fc,#ffe1ef);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--W)/60);text-align:center;padding:8px}
-.logo{font-family:Lobster,cursive;font-size:calc(var(--W)/8.5);color:#e2479b;transform:rotate(-6deg);text-shadow:3px 3px 0 #fff,5px 5px 0 rgba(226,71,155,.25);line-height:1}
-.subl{font-size:calc(var(--W)/40);color:#9a4f78}
-.dice{display:flex;gap:calc(var(--W)/50)}
-.die{width:calc(var(--W)/9);height:calc(var(--W)/9);background:#fff;border-radius:18%;box-shadow:0 2px 6px rgba(0,0,0,.25);display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:12%}
-.pip{width:70%;height:70%;margin:auto;border-radius:50%;background:#2a2230}
-.turn{font-size:calc(var(--W)/30);font-weight:500}
-.decks{display:flex;gap:calc(var(--W)/30)}
-.deck{width:calc(var(--W)/6);height:calc(var(--W)/10);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:calc(var(--W)/38);transform:rotate(-8deg);box-shadow:0 2px 5px rgba(0,0,0,.2)}
-.deck.ch{background:#f39321}.deck.cs{background:#e2479b;transform:rotate(8deg)}
+ background:#1d1d1d;border:3px solid #1d1d1d;gap:1px;flex:0 0 auto;font-family:Oswald,'Arial Narrow',Rubik,sans-serif;color:#1d1d1d;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+.cell{position:relative;background:var(--bg);overflow:hidden;cursor:pointer;container-type:size}
+.in{position:absolute;left:50%;top:50%;width:100cqw;height:100cqh;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;text-align:center}
+.cell.l .in{width:100cqh;height:100cqw;transform:translate(-50%,-50%) rotate(90deg)}
+.cell.t .in{transform:translate(-50%,-50%) rotate(180deg)}
+.cell.r .in{width:100cqh;height:100cqw;transform:translate(-50%,-50%) rotate(-90deg)}
+.bar{flex:0 0 22%;width:100%;border-bottom:1px solid #1d1d1d;display:flex;align-items:center;justify-content:center;gap:4%}
+.hs{width:15%;height:52%;background:#1f9d48;border:1px solid #0b4d22;border-radius:1px}
+.ht{width:34%;height:58%;background:#d71920;border:1px solid #5c0a0d;border-radius:1px}
+.nm{width:100%;padding:4% 5% 0;font-weight:600;text-transform:uppercase;line-height:1.08;font-size:calc(var(--u)/5.2);overflow-wrap:normal;letter-spacing:.01em}
+.pr{margin-top:auto;padding-bottom:5%;font-weight:500;font-size:calc(var(--u)/5.6)}
+.ic2{margin:auto 0;font-size:calc(var(--u)/2.6);line-height:1}
+.q{margin:auto 0;font-weight:700;font-size:calc(var(--u)/1.35);line-height:1;color:#d6336c;-webkit-text-stroke:1px #1d1d1d}
+.cell.mort .in{opacity:.4}
+.cell.mort::after{content:'ЗАЛОГ';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-30deg);font-weight:700;font-size:calc(var(--u)/4.5);color:#b00020;border:1.5px solid #b00020;padding:0 3px;background:rgba(255,255,255,.7)}
+.cin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;text-transform:uppercase;font-weight:700;line-height:1.05}
+.cin .ic{font-size:calc(var(--u)/2.3);line-height:1.15}
+.cin .nm2{font-size:calc(var(--u)/4.4)}
+.cin .sb{font-size:calc(var(--u)/7);font-weight:500}
+.jail{position:absolute;top:0;right:0;width:66%;height:66%;background:#f39321;border-left:1px solid #1d1d1d;border-bottom:1px solid #1d1d1d;overflow:hidden}
+.jail .cin{transform:rotate(45deg)}.jail .cin .ic{font-size:calc(var(--u)/3.2)}.jail .cin .nm2{font-size:calc(var(--u)/6)}
+.jail .bars{position:absolute;inset:18%;background:repeating-linear-gradient(90deg,transparent 0 16%,#1d1d1d 16% 22%);opacity:.18}
+.vis{position:absolute;font-weight:700;font-size:calc(var(--u)/5.5);text-transform:uppercase;display:flex;align-items:center;justify-content:center}
+.vis.lft{left:0;top:0;width:34%;height:66%}.vis.lft span{transform:rotate(90deg);white-space:nowrap}
+.vis.bot{left:0;bottom:0;width:100%;height:34%}
+.toks{position:absolute;inset:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;align-content:center;gap:1px;pointer-events:none}
+.tk{width:calc(var(--u)/2);height:calc(var(--u)/2);border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:calc(var(--u)/3.3);border:2px solid;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+.center{grid-area:2/2/11/11;background:var(--bg);position:relative;overflow:hidden}
+.banner{position:absolute;left:50%;top:50%;width:76%;transform:translate(-50%,-50%) rotate(-45deg);background:#d6336c;color:#fff;font-weight:700;font-size:calc(var(--u)*.95);letter-spacing:.05em;text-align:center;line-height:1;padding:.14em 0 .18em;border:calc(var(--u)/14) solid #fff;outline:2px solid #1d1d1d;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.slot{position:absolute;width:calc(var(--u)*2.9);height:calc(var(--u)*1.9);border:2px dashed #1d1d1d;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:600;text-transform:uppercase;font-size:calc(var(--u)/3.4);gap:2px;background:rgba(255,255,255,.3)}
+.slot b{font-size:calc(var(--u)/1.8);line-height:1}
+.slot.cs{left:9%;top:13%;transform:rotate(135deg)}.slot.ch{right:9%;bottom:13%;transform:rotate(-45deg)}
+.slot.ch b{color:#d6336c}
+.cdice{position:absolute;right:5%;top:6%;display:flex;gap:calc(var(--u)/6)}
+.die{width:calc(var(--u)*.85);height:calc(var(--u)*.85);background:#fff;border-radius:18%;box-shadow:0 2px 5px rgba(0,0,0,.3);display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:12%}
+.pip{width:70%;height:70%;margin:auto;border-radius:50%;background:#1d1d1d}
+.cturn{position:absolute;left:5%;bottom:6%;display:flex;flex-direction:column;align-items:center;font-weight:600;font-size:calc(var(--u)/3.6);text-transform:uppercase;max-width:calc(var(--u)*2.3);text-align:center;line-height:1.1}
+.cturn .tk{width:calc(var(--u)*.85);height:calc(var(--u)*.85);font-size:calc(var(--u)/1.9);margin-bottom:3px}
 .panel{flex:1 1 320px;max-width:420px;display:flex;flex-direction:column;gap:10px}
 .box{background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 10px rgba(160,60,110,.12)}
 .cur{display:flex;align-items:center;gap:10px}
@@ -69,7 +80,7 @@ h3{margin:0 0 8px;font-size:15px;color:#9a4f78}
 .card-t{font-size:18px;text-align:center;padding:10px 4px 4px}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#2a2230;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:30;max-width:90vw;text-align:center}
 #setup{max-width:440px;margin:20px auto}
-#setup .logo{font-size:64px;text-align:center;margin:10px 0 24px}
+#setup .logo{font-family:Lobster,cursive;color:#e2479b;transform:rotate(-6deg);font-size:64px;text-align:center;margin:10px 0 24px}
 .row{display:flex;gap:8px;margin-bottom:8px}
 .row input{flex:1;font-size:16px;padding:10px;border:2px solid #f0cfe0;border-radius:10px;font-family:inherit}
 .row select{font-size:22px;border:2px solid #f0cfe0;border-radius:10px;background:#fff}
@@ -397,19 +408,26 @@ function askNew(){modal(`<div class="mh" style="background:#c62828">Новая �
 const PIPS={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
 const dieHTML=n=>`<div class="die">${[1,2,3,4,5,6,7,8,9].map(k=>PIPS[n].includes(k)?'<div class="pip"></div>':'<div></div>').join('')}</div>`;
 function gp(i){if(i<=10)return[11,11-i];if(i<=20)return[11-(i-10),1];if(i<=30)return[1,1+(i-20)];return[1+(i-30),11]}
-const fit=n=>{const L=Math.max(...n.split(/[\s-]+/).map(w=>w.length));return L>8?`style="font-size:calc(var(--W)/66*${(8/L).toFixed(2)})"`:''};
+const fit=n=>{const L=Math.max(...n.split(/[\s-]+/).map(w=>w.length));return L>9?`style="font-size:calc(var(--u)/5.2*${(9/L).toFixed(2)})"`:''};
+function autofit(){document.querySelectorAll('#board .nm').forEach(e=>{let fs=parseFloat(getComputedStyle(e).fontSize),n=0;while(e.scrollWidth>e.clientWidth+.5&&n<25){fs*=.93;e.style.fontSize=fs+'px';n++}})}
+const tokHTML=p=>`<div class="tk" style="border-color:${p.color}">${p.token}</div>`;
 function cellHTML(i){const s=SP[i],[r,c]=gp(i),side=i%10===0?'corner':i<10?'b':i<20?'l':i<30?'t':'r',pr=S.props[i];
- let inner,style=`grid-row:${r};grid-column:${c};`,cls='cell '+(side==='corner'?'':side);
- if(side==='corner')inner=`<div class="cn"><div class="ic">${s.ic}</div><div class="nm">${s.name}</div>${s.sub?`<div class="sb">${s.sub}</div>`:''}</div>`;
- else if(s.t==='street'){const h=pr.houses;inner=`<div class="bar" style="background:${G[s.g][0]}">${h===5?'🏨':'🏠'.repeat(h)}</div><div class="txt"><div class="nm" ${side==='l'||side==='r'?'':fit(s.name)}>${s.name}</div><div class="pr">${pr.mort?'залог':M(s.price)}</div></div>`}
- else inner=`<div class="txt"><div class="ic2">${s.ic}</div><div class="nm" ${side==='l'||side==='r'?'':fit(s.name)}>${s.name}</div><div class="pr">${s.price?(pr.mort?'залог':M(s.price)):s.amt?M(s.amt):''}</div></div>`;
+ let inner,style=`grid-row:${r};grid-column:${c};`,cls='cell '+side;
+ if(i===10)inner=`<div class="jail"><div class="bars"></div><div class="cin"><div class="ic">${s.ic}</div><div class="nm2">${s.name}</div></div></div><div class="vis lft"><span>просто</span></div><div class="vis bot">в гостях</div>`;
+ else if(side==='corner'){const rot={0:-45,20:135,30:-135}[i];inner=`<div class="cin" style="transform:rotate(${rot}deg)">${i===0?'<div class="sb">'+s.sub+'</div>':''}<div class="nm2" style="font-size:calc(var(--u)/${i===0?3.6:4.4})">${s.name}</div><div class="ic">${s.ic}</div>${i!==0&&s.sub?`<div class="sb">${s.sub}</div>`:''}</div>`}
+ else{let body;
+  if(s.t==='street'){const h=pr.houses;body=`<div class="bar" style="background:${G[s.g][0]}">${h===5?'<i class="ht"></i>':'<i class="hs"></i>'.repeat(h)}</div><div class="nm" ${fit(s.name)}>${s.name}</div><div class="pr">${M(s.price)}</div>`}
+  else if(s.t==='chance')body=`<div class="nm" ${fit(s.name)}>${s.name}</div><div class="q">?</div>`;
+  else if(s.t==='tax')body=`<div class="nm" ${fit(s.name)}>${s.name}</div><div class="ic2">${s.ic}</div><div class="pr">заплати ${M(s.amt)}</div>`;
+  else body=`<div class="nm" ${fit(s.name)}>${s.name}</div><div class="ic2">${s.ic}</div><div class="pr">${s.price?M(s.price):''}</div>`;
+  inner=`<div class="in">${body}</div>`}
  if(pr&&pr.owner!=null){style+=`box-shadow:inset 0 0 0 3px ${S.players[pr.owner].color};`;if(pr.mort)cls+=' mort'}
- const tk=S.players.filter(p=>!p.out&&p.pos===i).map(p=>`<div class="tk" style="border-color:${p.color}">${p.token}</div>`).join('');
+ const tk=S.players.filter(p=>!p.out&&p.pos===i).map(tokHTML).join('');
  return `<div class="${cls}" style="${style}" data-c="${i}">${inner}${tk?`<div class="toks">${tk}</div>`:''}</div>`}
 function render(){if(!S)return;const p=P();
  let h=SP.map((_,i)=>cellHTML(i)).join('');
- h+=`<div class="center"><div class="logo">Ленаполия</div><div class="decks"><div class="deck ch">❓ Шанс</div><div class="deck cs">💬 Сплетни</div></div><div class="dice">${dieHTML(S.dice[0])}${dieHTML(S.dice[1])}</div><div class="turn">${S.winner!=null?'🏆 Победа: '+esc(S.players[S.winner].name):'Ходит: '+esc(p.token+' '+p.name)}</div><div class="subl">нажми на клетку, чтобы посмотреть</div></div>`;
- $('board').innerHTML=h;$('board').querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>openProp(+e.dataset.c));
+ h+=`<div class="center"><div class="slot cs"><b>💬</b>Сплетни</div><div class="slot ch"><b>?</b>Шанс</div><div class="banner">ЛЕНАПОЛИЯ</div><div class="cdice">${dieHTML(S.dice[0])}${dieHTML(S.dice[1])}</div><div class="cturn">${S.winner!=null?'🏆<br>'+esc(S.players[S.winner].name):tokHTML(p)+'ходит<br>'+esc(p.name)}</div></div>`;
+ $('board').innerHTML=h;autofit();$('board').querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>openProp(+e.dataset.c));
  let status='',btn='';
  if(S.winner!=null){status=`🏆 ${esc(S.players[S.winner].name)} побеждает в Ленаполии!`;btn=`<button class="btn" data-a="new">Новая игра</button>`}
  else if(busy){status='Ходим…'}
@@ -428,6 +446,8 @@ function render(){if(!S)return;const p=P();
 }
 
 /* ---------- start ---------- */
+try{document.fonts.ready.then(()=>{if(S)render()})}catch(e){}
+let rzT;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(S)render()},150)});
 try{const raw=localStorage.getItem(SAVE);if(raw){S=JSON.parse(raw);if(S.phase==='moving')S.phase='action'}}catch(e){S=null}
 if(S&&S.players){$('app').style.display='flex';render()}else{S=null;renderSetup()}
 </script>
