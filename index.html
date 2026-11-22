@@ -108,6 +108,7 @@ h3{margin:0 0 8px;font-size:15px;color:#9a4f78}
 .win .ws{font-size:clamp(16px,3vw,24px);margin:8px 0 18px;opacity:.9}
 @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes bob{50%{transform:translateY(-12px) rotate(-6deg)}}
+.cboard{--W:min(calc(100vw - 16px),480px,72vh);margin:8px auto 0}
 .bov{position:fixed;inset:0;z-index:15;background:#fdf1f6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:8px;overflow:auto}
 .netwarn{background:#fff3cd;color:#6b4e00;padding:8px 10px;border-radius:10px;font-size:14px;margin-top:8px}
 </style>
@@ -266,13 +267,13 @@ let setupData=[{name:'Лена',token:'💅'},{name:'Игрок 2',token:'🦊'}
 let setupMode='net';
 function renderSetup(){
  $('app').style.display='none';$('client').style.display='none';$('setup').style.display='block';
- const bindTabs=()=>$('setup').querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{setupMode=b.dataset.mode;renderSetup()});
+ const bindTabs=()=>{$('setup').querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{setupMode=b.dataset.mode;renderSetup()});addHelp()};
  if(setupMode==='net'){$('setup').innerHTML=`<div class="logo">Ленаполия</div><div class="tabs"><button class="on">💻 Поле на ноутбуке</button><button data-mode="phones">📲 Только телефоны</button><button data-mode="local">🖥 Один экран</button></div>
  <div class="box"><p>Поле будет на этом экране (ноутбук, телевизор), а каждый игрок ходит со своего телефона: открывает ссылку или сканирует QR-код.</p><div class="btns"><button class="btn" id="mkroom">Создать комнату</button></div></div>`;
  bindTabs();$('mkroom').onclick=()=>hostStart(false);return}
  if(setupMode==='phones'){let nm='',tk=TOKENS[0];try{nm=localStorage.getItem('lp-name')||'';tk=localStorage.getItem('lp-tok')||tk}catch(e){}
   $('setup').innerHTML=`<div class="logo">Ленаполия</div><div class="tabs"><button data-mode="net">💻 Поле на ноутбуке</button><button class="on">📲 Только телефоны</button><button data-mode="local">🖥 Один экран</button></div>
- <div class="box"><p>Без ноутбука: этот телефон создаёт комнату и тоже играет, остальные заходят по QR. Поле можно открыть на любом телефоне кнопкой «🗺 Поле».</p>
+ <div class="box"><p>Без ноутбука: этот телефон создаёт комнату и тоже играет, остальные заходят по QR. Поле видно на каждом телефоне сверху экрана.</p>
  <h3>Как тебя зовут?</h3><div class="row"><input id="hn" maxlength="14" value="${esc(nm)}" placeholder="Имя"></div>
  <h3>Фишка</h3><div class="tokpick">${TOKENS.map(t=>`<button data-t="${t}" class="${t===tk?'on':''}">${t}</button>`).join('')}</div>
  <div class="btns"><button class="btn" id="mkroom">Создать комнату</button></div></div>`;
@@ -285,10 +286,21 @@ function renderSetup(){
  for(let i=0;i<setupN;i++){h+=`<div class="row"><select data-tk="${i}">${TOKENS.map(t=>`<option ${t===setupData[i].token?'selected':''}>${t}</option>`).join('')}</select><input data-nm="${i}" value="${esc(setupData[i].name)}" maxlength="14"></div>`}
  h+=`<div class="btns"><button class="btn" id="go">Начать игру</button></div></div>`;
  $('setup').innerHTML=h;
- $('setup').querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{setupMode=b.dataset.mode;renderSetup()});
+ $('setup').querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{setupMode=b.dataset.mode;renderSetup()});addHelp();
  $('setup').querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{readSetup();setupN=+b.dataset.n;renderSetup()});
  $('go').onclick=()=>{readSetup();newGame(setupData.slice(0,setupN))};
 }
+function addHelp(){const t=$('setup').querySelector('.tabs');if(!t||$('helpb'))return;t.insertAdjacentHTML('afterend','<div class="btns" style="margin:-2px 0 10px"><button class="btn sec" id="helpb">❓ Как пользоваться</button></div>');$('helpb').onclick=openHelp}
+function openHelp(){modal(`<div class="mh" style="background:#e2479b">❓ Как пользоваться</div><div class="mb" style="font-size:14px">
+<h3>💻 Поле на ноутбуке</h3>
+<p>1. На ноутбуке открой игру, выбери эту вкладку и нажми «Создать комнату».<br>2. Каждый игрок сканирует QR-код телефоном (или открывает ссылку), пишет имя и выбирает фишку.<br>3. Когда все зашли — «Начать игру». Большое поле на ноутбуке, а на телефоне у каждого свои деньги, имущество и кнопки хода.</p>
+<h3>📲 Только телефоны</h3>
+<p>1. Один игрок на своём телефоне выбирает эту вкладку, пишет имя, выбирает фишку и жмёт «Создать комнату».<br>2. Остальные сканируют QR с его экрана.<br>3. «Начать игру» — поле сверху у каждого на телефоне.<br>⚠️ Телефон, создавший комнату, ведёт игру: не закрывай на нём вкладку и не блокируй экран надолго.</p>
+<h3>🖥 Один экран</h3>
+<p>Все играют на одном устройстве и передают его по кругу. Деньги тут видны всем.</p>
+<h3>Во время игры</h3>
+<p>• Деньги других игроков не видны — только свои.<br>• Нажми на клетку поля или на своё место в списке, чтобы посмотреть аренду, построить дом или заложить.<br>• Не хватает денег — игра сама предложит, что продать или заложить.<br>• Если телефон отключился — просто открой ссылку снова, вернёшься в ту же игру.<br>• Связь идёт через интернет, телефоны могут быть в разных Wi-Fi или на мобильном интернете.</p>
+<div class="btns"><button class="btn sec" id="helprules">Правила игры</button><button class="btn" onclick="closeM()">Понятно</button></div></div>`);$('helprules').onclick=openRules}
 function readSetup(){$('setup').querySelectorAll('[data-nm]').forEach(e=>setupData[+e.dataset.nm].name=e.value.trim()||('Игрок '+(+e.dataset.nm+1)));$('setup').querySelectorAll('[data-tk]').forEach(e=>setupData[+e.dataset.tk].token=e.value)}
 function newGame(list,net){
  S={players:list.map((p,i)=>({name:p.name,token:p.token,color:COLORS[i],money:1500,pos:0,inJail:false,jailTurns:0,cards:[],shields:[],skip:0,out:false,creditor:null})),
@@ -679,9 +691,9 @@ function renderClient(hadPrompt){const el=$('client');
  const own=Object.keys(S.props).map(Number).filter(i=>S.props[i].owner===pid);
  let turn;if(S.winner!=null)turn=`🏆 Победа: ${esc(S.players[S.winner].name)}!`;else if(my)turn='Твой ход!';else turn=`Ходит ${esc(cur.token+' '+cur.name)}`;
  const ui=m.ui;
- el.innerHTML=`<div class="box" style="margin-top:8px"><div class="me"><span class="big">${me.token}</span><span class="nmb">${esc(me.name)}${me.out?' (банкрот)':''}</span><span class="money" style="${me.money<0?'color:#c62828':''}">${M(me.money)}</span></div>
+ el.innerHTML=`<div class="board cboard" id="cbv"></div><div class="box" style="margin-top:8px"><div class="me"><span class="big">${me.token}</span><span class="nmb">${esc(me.name)}${me.out?' (банкрот)':''}</span><span class="money" style="${me.money<0?'color:#c62828':''}">${M(me.money)}</span></div>
   <div style="font-size:14px;color:#7a3d60;margin-top:4px">📍 ${esc(SP[me.pos].name)}${me.inJail?' — в тюрьме 🔒':''}${me.cards.length?' · 🎫 выход из тюрьмы':''}${me.shields&&me.shields.length?' · 🛡️ отмена штрафа':''}${me.skip?' · ⏸️ пропуск хода':''}</div>
-  <div class="turnbar ${my?'my':''}">${turn}</div><div class="btns" style="margin-top:6px"><button class="btn sec" id="cboard" style="padding:8px">🗺 Посмотреть поле</button></div><div class="mydice">${dieHTML(S.dice[0])}${dieHTML(S.dice[1])}</div>
+  <div class="turnbar ${my?'my':''}">${turn}</div><div class="mydice">${dieHTML(S.dice[0])}${dieHTML(S.dice[1])}</div>
   ${my&&ui?`<div class="status">${ui.status}</div><div class="btns">${ui.btn}</div>`:(my&&busy?'<div class="status">Ходим…</div>':'')}
   ${!my&&me.money<0&&!me.out?debtBox(pid).replace(/<button class="btn bad" data-a="bankrupt">Объявить банкротство<\/button>/,'<p>Объявить банкротство можно будет в свой ход.</p>'):''}
  </div>
@@ -694,8 +706,7 @@ function renderClient(hadPrompt){const el=$('client');
   if(a==='new')return;if(a==='debt'){const [x,i]=b.dataset.v.split(':');csend({t:'prop',a:x,i:+i});return}csend({t:'act',a})});
  el.querySelectorAll('[data-c]').forEach(r=>r.onclick=()=>openProp(+r.dataset.c,(a,i)=>{csend({t:'prop',a,i});closeM()}));
  if($('ctrade'))$('ctrade').onclick=()=>{T={to:null};window.SUBMIT_TRADE=(from,to,g,t,gm,tm)=>csend({t:'trade',to,g,tt:t,gm,tm});drawTrade()};
- $('crules').onclick=openRules;$('cboard').onclick=openBoardView;if($('cinv'))$('cinv').onclick=showJoinQR;
- if($('bov'))drawBoardView();
+ $('crules').onclick=openRules;{const bv=$('cbv');bv.innerHTML=boardHTML();autofit(bv);bv.querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>openProp(+e.dataset.c,(a,i)=>{csend({t:'prop',a,i});closeM()}))}if($('cinv'))$('cinv').onclick=showJoinQR;
  if(CL.local&&!CL.warned){CL.warned=1;toast('Этот телефон ведёт игру — не закрывай вкладку и не блокируй экран надолго')}
  const pr=m.prompt;
  if(pr){if(!hadPrompt||hadPrompt!==pr.id){
