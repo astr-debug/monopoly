@@ -276,7 +276,7 @@ function newGame(list,net){
   props:{},cur:0,phase:'roll',dbl:0,dice:[3,4],canAgain:false,pendingBuy:null,log:[],winner:null,
   decks:{chance:shuffle([...CARDS.chance.keys()]),chest:shuffle([...CARDS.chest.keys()])},extra:false};
  SP.forEach((s,i)=>{if(s.price)S.props[i]={owner:null,houses:0,mort:false}});
- if(net){S.net=true;S.room=NET.room;S.keys=list.map(l=>l.key);S.bc=NET.bc}
+ if(net){S.net=true;S.room=NET.room;S.keys=list.map(l=>l.key);S.bc=NET.bc;S.broker=NET.broker}
  log(`Игра началась! Первым ходит ${S.players[0].name}.`);
  $('setup').style.display='none';$('app').style.display='flex';save();render();
 }
@@ -486,32 +486,54 @@ let rzT;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(
 <script>
 /* ================= NETWORK (laptop = host, phones = clients) ================= */
 const QS=new URLSearchParams(location.search);
-const NET={mode:null,room:null,tx:null,who:{},cids:new Set(),lobby:[],bc:false};
+const NET={mode:null,room:null,tx:null,who:{},cids:new Set(),lobby:[],bc:false,broker:null,seen:{}};
 const CL={room:null,key:null,tx:null,state:null,lobby:null,pid:-1,status:'connecting',started:false};
 const PEER_URLS=['https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js','https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js','https://unpkg.com/peerjs@1.5.3/dist/peerjs.min.js'];
+const MQTT_URLS=['https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js','https://unpkg.com/mqtt@5/dist/mqtt.min.js'];
+const BROKERS=['wss://broker.hivemq.com:8884/mqtt','wss://broker.emqx.io:8084/mqtt'];
+const topicH=r=>'lenapoly/v1/'+r+'/h',topicC=(r,id)=>'lenapoly/v1/'+r+'/c/'+id;
 const QR_URLS=['https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js','https://unpkg.com/qrcode-generator@1.4.4/qrcode.js'];
 function loadScript(urls){return new Promise((res,rej)=>{let i=0;const next=()=>{if(i>=urls.length)return rej(new Error('load'));const el=document.createElement('script');el.src=urls[i++];el.onload=()=>res();el.onerror=()=>{el.remove();next()};document.head.appendChild(el)};next()})}
 const rid=n=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';for(let i=0;i<n;i++)r+=A[Math.floor(Math.random()*A.length)];return r};
 const peerId=room=>'lenapoly-'+room.toLowerCase();
-const joinURL=()=>location.origin+location.pathname+'?join='+NET.room+(NET.bc?'&bc=1':'');
-const netOnline=pid=>Object.values(NET.who).includes(pid);
+const joinURL=()=>location.origin+location.pathname+'?join='+NET.room+(NET.broker!=null?'&b='+NET.broker:'')+(NET.bc?'&bc=1':'')+(QS.get('fakemq')?'&fakemq=1':'');
+const netOnline=pid=>Object.entries(NET.who).some(([c,p])=>p===pid&&Date.now()-(NET.seen[c]||0)<25000);
 const NETFAIL='Не получилось подключиться к сервису связи. Режим с телефонов работает, когда игра открыта по ссылке на GitHub Pages (astr-debug.github.io/monopoly), а не внутри Claude.';
 
 /* ---- transports ---- */
+function mqConnect(list){return new Promise((res,rej)=>{const tryIdx=k=>{if(k>=list.length)return rej(new Error('mq'));let done=false,c;
+ try{c=mqtt.connect(BROKERS[list[k]],{clientId:'lp_'+rid(12),reconnectPeriod:2000,connectTimeout:7000,clean:true,keepalive:30})}catch(e){return tryIdx(k+1)}
+ const t=setTimeout(()=>{if(!done){done=true;try{c.end(true)}catch(e){}tryIdx(k+1)}},8000);
+ c.on('connect',()=>{if(!done){done=true;clearTimeout(t);res({client:c,idx:list[k]})}})};tryIdx(0)})}
+async function loadNetLibs(){const r={mq:false,peer:false};
+ if(QS.get('fakemq'))r.mq=!!window.mqtt;
+ await Promise.all([loadScript(MQTT_URLS).then(()=>r.mq=true).catch(()=>{}),loadScript(PEER_URLS).then(()=>r.peer=true).catch(()=>{})]);return r}
 function hostTransport(room,onMsg,onReady,onFail){
  if(NET.bc){const bc=new BroadcastChannel('lp-'+room);bc.onmessage=e=>{const d=e.data;if(d.to==='host')onMsg(d.from,d.m)};setTimeout(onReady,0);return{send:(id,m)=>bc.postMessage({to:id,m})}}
- const conns={};let tries=0,peer;
- const make=()=>{peer=new Peer(peerId(room));
-  peer.on('open',()=>{tries=0;onReady()});
-  peer.on('connection',c=>{c.on('open',()=>{conns[c.peer]=c});c.on('data',d=>onMsg(c.peer,d));c.on('close',()=>{delete conns[c.peer];for(const k in NET.who)if(k===c.peer)delete NET.who[k];if(S)render()})});
+ const conns={};let tries=0,peer,mq=null,mqSettled=false,peerOpen=false,peerDead=!window.Peer;
+ const maybeReady=()=>{if(mqSettled&&(mq||peerOpen))onReady();else if(mqSettled&&peerDead)onFail&&onFail()};
+ if(window.mqtt){const pref=NET.broker!=null?[NET.broker,...BROKERS.map((_,i)=>i).filter(i=>i!==NET.broker)]:BROKERS.map((_,i)=>i);
+  mqConnect(pref).then(({client,idx})=>{mq=client;NET.broker=idx;
+   const sub=()=>client.subscribe(topicH(room),{qos:0});sub();client.on('connect',sub);
+   client.on('message',(t,buf)=>{let d;try{d=JSON.parse(buf.toString())}catch(e){return}if(d&&d.from)onMsg('m:'+String(d.from).slice(0,20),d.m)});
+   mqSettled=true;maybeReady()}).catch(()=>{mqSettled=true;maybeReady()})}
+ else mqSettled=true;
+ const make=()=>{if(!window.Peer)return;peer=new Peer(peerId(room));
+  peer.on('open',()=>{tries=0;peerOpen=true;maybeReady()});
+  peer.on('connection',c=>{c.on('open',()=>{conns[c.peer]=c});c.on('data',d=>onMsg(c.peer,d));c.on('close',()=>{delete conns[c.peer];delete NET.who[c.peer];if(S)render()})});
   peer.on('disconnected',()=>{try{peer.reconnect()}catch(e){}});
-  peer.on('error',e=>{if(e.type==='unavailable-id'&&tries<15){tries++;try{peer.destroy()}catch(x){}setTimeout(make,3000)}else if(['network','server-error','socket-error','browser-incompatible','ssl-unavailable'].includes(e.type)){onFail&&onFail(e)}})};
+  peer.on('error',e=>{if(e.type==='unavailable-id'&&tries<15){tries++;try{peer.destroy()}catch(x){}setTimeout(make,3000)}else if(['network','server-error','socket-error','browser-incompatible','ssl-unavailable'].includes(e.type)){peerDead=true;maybeReady()}})};
  make();
- return{send:(id,m)=>{const c=conns[id];if(c&&c.open){try{c.send(m)}catch(e){}}}};
+ return{send:(id,m)=>{if(id.startsWith('m:')){if(mq){try{mq.publish(topicC(room,id.slice(2)),JSON.stringify(m))}catch(e){}}return}const c=conns[id];if(c&&c.open){try{c.send(m)}catch(e){}}}};
 }
-function clientTransport(room,onMsg,onStatus){
+function clientTransport(room,onMsg,onStatus,useMq){
  if(QS.get('bc')){const id='c'+rid(8);const bc=new BroadcastChannel('lp-'+room);bc.onmessage=e=>{if(e.data.to===id)onMsg(e.data.m)};setTimeout(()=>onStatus('open'),50);return{send:m=>bc.postMessage({to:'host',from:id,m}),check(){}}}
- const peer=new Peer();let conn=null,timer=null;
+ if(useMq!=null){const id=rid(12);let c=null;onStatus('broker');
+  mqConnect([useMq]).then(({client})=>{c=client;const sub=()=>client.subscribe(topicC(room,id),{qos:0},()=>onStatus('open'));sub();
+   client.on('connect',sub);client.on('offline',()=>onStatus('closed'));
+   client.on('message',(t,buf)=>{let d;try{d=JSON.parse(buf.toString())}catch(e){return}onMsg(d)})}).catch(()=>onStatus('neterr'));
+  return{send:m=>{if(c&&c.connected){try{c.publish(topicH(room),JSON.stringify({from:id,m}))}catch(e){}}},check(){if(c&&!c.connected){try{c.reconnect()}catch(e){}}}}}
+ onStatus('connecting');const peer=new Peer();let conn=null,timer=null;
  const connect=()=>{clearTimeout(timer);if(conn&&conn.open)return;try{conn&&conn.close()}catch(e){}
   conn=peer.connect(peerId(room),{reliable:true});
   conn.on('open',()=>onStatus('open'));conn.on('data',onMsg);
@@ -521,17 +543,16 @@ function clientTransport(room,onMsg,onStatus){
  peer.on('error',e=>{if(e.type==='peer-unavailable'){onStatus('nohost');timer=setTimeout(connect,3000)}else if(['network','server-error','socket-error'].includes(e.type)){onStatus('neterr')}});
  return{send:m=>{if(conn&&conn.open){try{conn.send(m)}catch(e){}}},check(){if(peer.disconnected){try{peer.reconnect()}catch(e){}}if(!conn||!conn.open)connect()}};
 }
-
 /* ---- host ---- */
 async function hostStart(){NET.bc=!!QS.get('bc');NET.room=rid(5);NET.lobby=[];NET.who={};NET.mode='host';
  $('setup').innerHTML=`<div class="logo">Ленаполия</div><div class="box"><p>Создаём комнату…</p></div>`;
- try{if(!NET.bc)await loadScript(PEER_URLS)}catch(e){$('setup').innerHTML+=`<div class="netwarn">${NETFAIL}</div>`;return}
+ if(!NET.bc){const r=await loadNetLibs();if(!r.mq&&!r.peer){$('setup').innerHTML+=`<div class="netwarn">${NETFAIL}</div>`;return}}
  NET.tx=hostTransport(NET.room,onHostMsg,renderLobby,()=>{$('setup').insertAdjacentHTML('beforeend',`<div class="netwarn">${NETFAIL}</div>`)});
  loadScript(QR_URLS).then(()=>{if(!S)renderLobby()}).catch(()=>{});
 }
 async function hostResume(){NET.mode='host';NET.room=S.room;NET.bc=!!S.bc;
- try{if(!NET.bc)await loadScript(PEER_URLS)}catch(e){toast('Нет связи с сервисом для телефонов');return}
- NET.tx=hostTransport(NET.room,onHostMsg,()=>render(),()=>toast('Нет связи с сервисом для телефонов'));
+ if(!NET.bc){const r=await loadNetLibs();if(!r.mq&&!r.peer){toast('Нет связи с сервисом для телефонов');return}}
+ NET.broker=S.broker!=null?S.broker:null;NET.tx=hostTransport(NET.room,onHostMsg,()=>{S.broker=NET.broker;save();render()},()=>toast('Нет связи с сервисом для телефонов'));
  loadScript(QR_URLS).catch(()=>{});
 }
 function qrSVG(url){try{const q=qrcode(0,'M');q.addData(url);q.make();return q.createSvgTag({cellSize:6,margin:2,scalable:true})}catch(e){return ''}}
@@ -545,7 +566,8 @@ function renderLobby(){if(S)return;const url=joinURL();
  $('setup').querySelectorAll('[data-kick]').forEach(b=>b.onclick=()=>{NET.lobby.splice(+b.dataset.kick,1);renderLobby();sendLobby()});
 }
 function sendLobby(){const pl=NET.lobby.map(x=>({name:x.name,token:x.token}));NET.cids.forEach(cid=>{const me=NET.lobby.findIndex(l=>l.cid===cid);NET.tx.send(cid,{t:'lobby',players:pl,me})})}
-function onHostMsg(cid,m){if(!m||typeof m!=='object')return;NET.cids.add(cid);
+function onHostMsg(cid,m){if(!m||typeof m!=='object')return;NET.cids.add(cid);const wasOff=!NET.seen[cid]||Date.now()-NET.seen[cid]>25000;NET.seen[cid]=Date.now();
+ if(m.t==='ping'){if(wasOff&&S)render();return}
  if(m.t==='hello'||m.t==='join'){
   if(S&&S.net){const pid=S.keys.indexOf(m.key);if(pid>=0){for(const k in NET.who)if(NET.who[k]===pid)delete NET.who[k];NET.who[cid]=pid;render()}else NET.tx.send(cid,{t:'started'});return}
   if(S)return;
@@ -559,21 +581,28 @@ function onHostMsg(cid,m){if(!m||typeof m!=='object')return;NET.cids.add(cid);
  else if(m.t==='answer')answer(pid,m.id,m.v);
  else if(m.t==='trade'){if(pid===S.cur)proposeTrade(pid,+m.to,m.g,m.tt,m.gm,m.tm)}
 }
-function pushState(){if(NET.mode!=='host'||!NET.tx||!S||!S.net)return;
+let pushT=null,pushLast=0;
+function pushState(){if(NET.mode!=='host'||!NET.tx||!S||!S.net)return;const now=Date.now();if(now-pushLast<150){if(!pushT)pushT=setTimeout(()=>{pushT=null;pushState()},160-(now-pushLast));return}pushLast=now;
  const snap=JSON.parse(JSON.stringify(S));delete snap.keys;snap.log=snap.log.slice(0,15);
  for(const cid in NET.who){const pid=NET.who[cid];const mine=JSON.parse(JSON.stringify(snap));mine.players.forEach((q,j)=>{if(j!==pid){q.money=null;q.creditor=null}});NET.tx.send(cid,{t:'state',S:mine,you:pid,busy,prompt:PR&&PR.pid===pid?{id:PR.id,kind:PR.kind,data:PR.data}:null,ui:pid===S.cur&&!PR?turnUI():null})}}
 function showJoinQR(){const url=joinURL();modal(`<div class="mh" style="background:#e2479b">📱 Вход с телефона</div><div class="mb"><div class="qrbox">${qrSVG(url)}</div><div class="link">${esc(url)}</div><p style="font-size:14px">Если телефон отключился, просто откройте ссылку снова — игрок вернётся в игру.</p><div class="btns"><button class="btn sec" onclick="closeM()">Закрыть</button></div></div>`)}
 
 /* ---- phone ---- */
 async function clientStart(room){CL.room=room;$('setup').style.display='none';$('app').style.display='none';$('client').style.display='block';
- const ks=QS.get('bc')?sessionStorage:localStorage;try{CL.key=ks.getItem('lp-key-'+room)||rid(16);ks.setItem('lp-key-'+room,CL.key)}catch(e){CL.key=CL.key||rid(16)}
- renderClient();
- try{if(!QS.get('bc'))await loadScript(PEER_URLS)}catch(e){CL.status='neterr';renderClient();return}
- CL.tx=clientTransport(room,onClientMsg,st=>{CL.status=st;if(st==='open')CL.tx.send({t:'hello',key:CL.key});renderClient()});
- document.addEventListener('visibilitychange',()=>{if(!document.hidden&&CL.tx)CL.tx.check()});
+ const ks=(QS.get('bc')||QS.get('fakemq'))?sessionStorage:localStorage;try{CL.key=ks.getItem('lp-key-'+room)||rid(16);ks.setItem('lp-key-'+room,CL.key)}catch(e){CL.key=CL.key||rid(16)}
+ CL.status='loading';renderClient();
+ const b=QS.get('b');let useMq=null;
+ if(!QS.get('bc')){const r=await loadNetLibs();if(b!=null&&r.mq)useMq=+b;else if(!r.peer){CL.status='neterr';renderClient();return}}
+ const go=mq=>{CL.tx=clientTransport(room,onClientMsg,st=>{if(CL.lobby||CL.state||CL.started){if(st==='open')CL.tx.send({t:'hello',key:CL.key});CL.status=st;if(st!=='open'||!CL.shown)renderClient();return}
+   if(st==='neterr'&&mq!=null&&window.Peer){go(null);return}
+   if(st==='open')CL.tx.send({t:'hello',key:CL.key});
+   CL.status=st==='open'?'waiting':st;renderClient()},mq)};
+ go(useMq);
+ let n=0;setInterval(()=>{if(!CL.tx)return;if(!CL.lobby&&!CL.state&&!CL.started){CL.tx.send({t:'hello',key:CL.key});n++;if(n===5&&CL.status==='waiting'){CL.status='nohost';renderClient()}}else CL.tx.send({t:'ping'})},3000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&CL.tx){CL.tx.check();CL.tx.send({t:'hello',key:CL.key})}});
 }
 function onClientMsg(m){if(!m)return;
- if(m.t==='lobby'){CL.lobby=m;CL.state=null;renderClient()}
+ if(m.t==='lobby'){CL.lobby=m;CL.state=null;CL.status='open';renderClient()}
  else if(m.t==='started'){CL.started=true;CL.state=null;renderClient()}
  else if(m.t==='full'){toast('Комната заполнена');}
  else if(m.t==='state'){const hadPrompt=CL.state&&CL.state.prompt&&CL.state.prompt.id;CL.state=m;CL.pid=m.you;S=m.S;busy=m.busy;renderClient(hadPrompt)}}
@@ -581,18 +610,20 @@ const csend=m=>CL.tx&&CL.tx.send(m);
 function renderClient(hadPrompt){const el=$('client');
  if(!CL.state){
   if(CL.started){el.innerHTML=`<div class="logo" style="font-family:Lobster;color:#e2479b;font-size:48px;text-align:center;margin:20px 0">Ленаполия</div><div class="box"><p>Игра уже началась без этого телефона. Если ты игрок — открой ссылку с того же телефона, с которого входил(а).</p></div>`;return}
-  const st={connecting:'Подключаемся к столу…',closed:'Связь потерялась, переподключаемся…',nohost:'Стол не найден. Проверь, что на ноутбуке открыта комната '+CL.room,neterr:'Нет связи с сервисом. Проверь интернет.',open:''}[CL.status]||'';
+  const st={loading:'Загружаем игру…',broker:'Подключаемся к серверу связи…',connecting:'Соединяемся с ноутбуком…',waiting:'Ждём ответ от ноутбука…',closed:'Связь потерялась, переподключаемся…',nohost:'Ноутбук не отвечает. Проверь, что на нём открыта комната '+CL.room+' и страница не закрыта. Попробуй отсканировать QR заново.',neterr:'Нет связи с сервером. Проверь интернет на телефоне.'}[CL.status]||'';
   const lb=CL.lobby;let name='',tok=null;try{name=localStorage.getItem('lp-name')||'';tok=localStorage.getItem('lp-tok')}catch(e){}
   const meI=lb?lb.me:-1;const me=meI>=0?lb.players[meI]:null;if(me){name=me.name;tok=me.token}
+  const pjn=$('jn'),ptk=el.querySelector('[data-t].on');if(pjn&&document.activeElement===pjn||pjn&&pjn.dataset.dirty){name=pjn.value;if(ptk)tok=ptk.dataset.t}
   const taken=lb?lb.players.filter((p,i)=>i!==meI).map(p=>p.token):[];if(!tok||taken.includes(tok))tok=TOKENS.find(t=>!taken.includes(t));
   el.innerHTML=`<div class="logo" style="font-family:Lobster;color:#e2479b;font-size:48px;text-align:center;margin:14px 0">Ленаполия</div>
   ${st?`<div class="netwarn">${esc(st)}</div>`:''}
   <div class="box"><h3>${me?'Ты в игре! Можно поменять имя или фишку':'Как тебя зовут?'}</h3><div class="row"><input id="jn" maxlength="14" value="${esc(name)}" placeholder="Имя"></div>
   <h3>Фишка</h3><div class="tokpick">${TOKENS.map(t=>`<button data-t="${t}" class="${t===tok?'on':''}" ${taken.includes(t)?'disabled':''}>${t}</button>`).join('')}</div>
-  <div class="btns"><button class="btn" id="jgo" ${CL.status!=='open'?'disabled':''}>${me?'Сохранить':'Я в игре!'}</button></div></div>
+  <div class="btns"><button class="btn" id="jgo" ${!CL.lobby?'disabled':''}>${me?'Сохранить':'Я в игре!'}</button></div></div>
   ${lb?`<div class="box"><h3>В комнате</h3>${lb.players.map(p=>`<div class="lob"><span style="font-size:24px">${p.token}</span>${esc(p.name)}</div>`).join('')||'<p>Пока никого</p>'}<p style="font-size:14px;color:#7a3d60">${me?'Ждём, когда на ноутбуке нажмут «Начать игру».':''}</p></div>`:''}`;
-  el.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{el.querySelectorAll('[data-t]').forEach(x=>x.classList.remove('on'));b.classList.add('on')});
-  $('jgo').onclick=()=>{const n=$('jn').value.trim();if(!n){toast('Напиши имя');return}const t=(el.querySelector('[data-t].on')||{}).dataset?.t||tok;try{localStorage.setItem('lp-name',n);localStorage.setItem('lp-tok',t)}catch(e){}csend({t:'join',key:CL.key,name:n,token:t})};
+  el.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{el.querySelectorAll('[data-t]').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('jn').dataset.dirty=1});
+  $('jn').oninput=()=>{$('jn').dataset.dirty=1};if(pjn&&pjn.dataset.dirty)$('jn').dataset.dirty=1;
+  $('jgo').onclick=()=>{const n=$('jn').value.trim();if(!n){toast('Напиши имя');return}const t=(el.querySelector('[data-t].on')||{}).dataset?.t||tok;try{localStorage.setItem('lp-name',n);localStorage.setItem('lp-tok',t)}catch(e){}csend({t:'join',key:CL.key,name:n,token:t});delete $('jn').dataset.dirty;$('jn').blur()};
   return}
  const m=CL.state,pid=CL.pid,me=S.players[pid],cur=S.players[S.cur],my=pid===S.cur&&S.winner==null;
  const own=Object.keys(S.props).map(Number).filter(i=>S.props[i].owner===pid);
