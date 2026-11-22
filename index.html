@@ -116,13 +116,23 @@ h3{margin:0 0 8px;font-size:15px;color:#9a4f78}
 .dot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-right:2px}
 
 
-.cdice,.mydice{perspective:600px}
-.die.tumble{animation:tumble .95s cubic-bezier(.2,.75,.3,1) both}
-.mydice .die.tumble{animation-name:tumbleS}
-@keyframes tumble{0%{transform:translate(-190%,-110%) rotateX(0) rotateY(0) rotate(0) scale(.55);opacity:0}12%{opacity:1}38%{transform:translate(-60%,-15%) rotateX(420deg) rotateY(220deg) rotate(170deg) scale(1.12)}60%{transform:translate(10%,12%) rotateX(640deg) rotateY(320deg) rotate(270deg) scale(1)}76%{transform:translate(-4%,-16%) rotateX(700deg) rotateY(350deg) rotate(330deg)}88%{transform:translate(0,3%) rotateX(720deg) rotateY(360deg) rotate(356deg)}100%{transform:none;opacity:1}}
-@keyframes tumbleS{0%{transform:translateY(-120%) rotateX(0) rotate(0) scale(.6);opacity:0}15%{opacity:1}45%{transform:translateY(-35%) rotateX(450deg) rotate(200deg) scale(1.15)}65%{transform:translateY(6%) rotateX(650deg) rotate(300deg)}80%{transform:translateY(-12%) rotateX(705deg) rotate(345deg)}100%{transform:none;opacity:1}}
 .tk.hop{animation:hop .2s ease-out}
 @keyframes hop{0%{transform:translateY(-45%) scale(1.2)}100%{transform:none}}
+.dice-ph{height:var(--dsz);width:calc(var(--dsz)*2.3)}
+.cdice .dice-ph{--dsz:calc(var(--u)*.85)}.mydice .dice-ph{--dsz:46px;margin:0 auto}
+.dice3{position:absolute;z-index:12;display:flex;justify-content:space-between;align-items:center;pointer-events:none;perspective:calc(var(--ds)*8)}
+.dice3 .cube{position:relative;width:var(--ds);height:var(--ds);transform-style:preserve-3d;will-change:transform}
+.dice3 .face{position:absolute;inset:0;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:14%;border-radius:18%;background:#fff;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);backface-visibility:hidden}
+.dice3 .pip{width:72%;height:72%}
+.dice3 .f1{transform:translateZ(calc(var(--ds)/2))}.dice3 .f6{transform:rotateY(180deg) translateZ(calc(var(--ds)/2))}
+.dice3 .f3{transform:rotateY(90deg) translateZ(calc(var(--ds)/2))}.dice3 .f4{transform:rotateY(-90deg) translateZ(calc(var(--ds)/2))}
+.dice3 .f2{transform:rotateX(90deg) translateZ(calc(var(--ds)/2))}.dice3 .f5{transform:rotateX(-90deg) translateZ(calc(var(--ds)/2))}
+.dice3.throw{animation:throw 1.15s cubic-bezier(.2,.8,.3,1) both}
+.dice3.dk-my.throw{animation-name:throwS}
+@keyframes throw{0%{transform:translate(-120%,-70%) scale(.55);opacity:0}12%{opacity:1}55%{transform:translate(6%,8%) scale(1.06)}75%{transform:translate(-2%,-10%) scale(1)}90%{transform:translate(0,2%)}100%{transform:none;opacity:1}}
+@keyframes throwS{0%{transform:translateY(-90%) scale(.6);opacity:0}15%{opacity:1}55%{transform:translateY(8%) scale(1.06)}75%{transform:translateY(-14%)}90%{transform:translateY(2%)}100%{transform:none;opacity:1}}
+.dice3.th-neon .face{background:linear-gradient(145deg,#1f2350,#0c0e22);box-shadow:inset 0 0 0 1.5px rgba(95,243,255,.85),inset 0 0 10px rgba(95,243,255,.35)}
+.dice3.th-neon .pip{background:#7ff6ff;box-shadow:0 0 4px #5ff3ff}
 /* ===== НЕОН ===== */
 .board.th-neon{--bg:#0e1022;background:#262b55;border:1px solid #33396e;color:#eef0ff;font-family:Montserrat,'Inter',sans-serif;border-radius:calc(var(--u)/4);overflow:hidden;box-shadow:0 0 0 1px rgba(255,61,160,.35),0 0 50px rgba(255,61,160,.22),0 0 120px rgba(80,200,255,.12)}
 .th-neon .cell{background:linear-gradient(180deg,#151935 0%,#0c0e1e 100%)}
@@ -635,9 +645,25 @@ function turnUI(){const p=P();
 const PIPS={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
 const pipsHTML=n=>[1,2,3,4,5,6,7,8,9].map(k=>PIPS[n].includes(k)?'<div class="pip"></div>':'<div></div>').join('');
 const dieHTML=n=>`<div class="die">${pipsHTML(n)}</div>`;
-const ROLLSEEN={};
-function animDice(root,key){if(!root||!S)return;const r=S.rollId||0;if(ROLLSEEN[key]===undefined){ROLLSEEN[key]=r;return}if(ROLLSEEN[key]===r)return;ROLLSEEN[key]=r;
- const fin=[S.dice[0],S.dice[1]];root.querySelectorAll('.die').forEach((d,k)=>{d.classList.add('tumble');d.style.animationDelay=(k*80)+'ms';let n=0;const iv=setInterval(()=>{n++;if(n>10||!d.isConnected){clearInterval(iv);d.innerHTML=pipsHTML(fin[k]);return}d.innerHTML=pipsHTML(1+Math.floor(Math.random()*6))},70)})}
+const DICE={};
+const FACE_ROT={1:[0,0],2:[-90,0],3:[0,-90],4:[0,90],5:[90,0],6:[0,180]};
+const rotFor=(n,sx,sy,sz)=>{const [x,y]=FACE_ROT[n]||[0,0];return `rotateX(${x+sx*360}deg) rotateY(${y+sy*360}deg) rotateZ(${sz*360}deg)`};
+function diceNode(key){let d=DICE[key];if(d)return d;d=document.createElement('div');d.className='dice3 dk-'+key;
+ d.innerHTML=[0,1].map(()=>`<div class="cube">${[1,2,3,4,5,6].map(f=>`<div class="face f${f}">${pipsHTML(f)}</div>`).join('')}</div>`).join('');
+ d._seen=undefined;return DICE[key]=d}
+function mountDice(root,key){const d=diceNode(key);const ph=root&&root.isConnected?root.querySelector('.dice-ph'):null;
+ if(!ph){d.style.display='none';return}
+ if(!d.isConnected)document.body.appendChild(d);
+ const r=ph.getBoundingClientRect();if(!r.width){d.style.display='none';return}
+ d.className='dice3 dk-'+key+' '+thCls()+(d.classList.contains('throw')?' throw':'');
+ d.style.display='flex';d.style.left=(r.left+scrollX)+'px';d.style.top=(r.top+scrollY)+'px';d.style.width=r.width+'px';d.style.height=r.height+'px';d.style.setProperty('--ds',r.height+'px');
+ const rid=S.rollId||0,cubes=d.querySelectorAll('.cube');
+ if(d._seen===undefined){d._seen=rid;cubes.forEach((c,k)=>{c._s=[0,0,0];c.style.transition='none';c.style.transform=rotFor(S.dice[k],0,0,0)});return}
+ if(d._seen===rid)return;d._seen=rid;
+ cubes.forEach((c,k)=>{const s=c._s||[0,0,0];c._s=[s[0]+2+Math.floor(Math.random()*2),s[1]+1+Math.floor(Math.random()*2),s[2]+Math.floor(Math.random()*2)];
+  c.style.transition=`transform ${1.05+k*.12}s cubic-bezier(.12,.62,.24,1)`;c.style.transform=rotFor(S.dice[k],...c._s)});
+ d.classList.remove('throw');void d.offsetWidth;d.classList.add('throw')}
+addEventListener('resize',()=>setTimeout(()=>{Object.keys(DICE).forEach(k=>{const d=DICE[k];if(!d.isConnected)return})},0));
 function gp(i){if(i<=10)return[11,11-i];if(i<=20)return[11-(i-10),1];if(i<=30)return[1,1+(i-20)];return[1+(i-30),11]}
 const fit=n=>{const L=Math.max(...n.split(/[\s-]+/).map(w=>w.length));return L>9?`style="font-size:calc(var(--u)/5.2*${(9/L).toFixed(2)})"`:''};
 function autofit(root){(root||document.getElementById('board')).querySelectorAll('.nm').forEach(e=>{let fs=parseFloat(getComputedStyle(e).fontSize),n=0;while(e.scrollWidth>e.clientWidth+.5&&n<25){fs*=.93;e.style.fontSize=fs+'px';n++}})}
@@ -656,10 +682,10 @@ function cellHTML(i){const s=SP[i],[r,c]=gp(i),side=i%10===0?'corner':i<10?'b':i
  const tk=S.players.map((p,j)=>(!p.out&&p.pos===i)?tokHTML(p).replace('class="tk"',(S.phase==='moving'&&j===S.cur)?'class="tk hop"':'class="tk"'):'').join('');
  return `<div class="${cls}" style="${style}" data-c="${i}">${inner}${tk?`<div class="toks">${tk}</div>`:''}</div>`}
 function boardHTML(){const p=P();let h=SP.map((_,i)=>cellHTML(i)).join('');
- h+=`<div class="center"><div class="slot cs"><b>${NEON()?svgI('chest'):'💬'}</b>Сплетни</div><div class="slot ch"><b>${NEON()?svgI('chance'):'?'}</b>Шанс</div>${NEON()?'<div class="sun"></div><div class="grid"></div>':''}<div class="banner">ЛЕНАПОЛИЯ</div><div class="cdice">${dieHTML(S.dice[0])}${dieHTML(S.dice[1])}</div><div class="cturn">${S.winner!=null?'🏆<br>'+esc(S.players[S.winner].name):tokHTML(p)+'ходит<br>'+esc(p.name)}</div></div>`;
+ h+=`<div class="center"><div class="slot cs"><b>${NEON()?svgI('chest'):'💬'}</b>Сплетни</div><div class="slot ch"><b>${NEON()?svgI('chance'):'?'}</b>Шанс</div>${NEON()?'<div class="sun"></div><div class="grid"></div>':''}<div class="banner">ЛЕНАПОЛИЯ</div><div class="cdice"><div class="dice-ph"></div></div><div class="cturn">${S.winner!=null?'🏆<br>'+esc(S.players[S.winner].name):tokHTML(p)+'ходит<br>'+esc(p.name)}</div></div>`;
  return h}
 function render(){if(!S)return;const p=P();const h=boardHTML();
- $('board').className='board '+thCls();$('board').innerHTML=h;autofit();animDice($('board'),'board');$('board').querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>openProp(+e.dataset.c));
+ $('board').className='board '+thCls();$('board').innerHTML=h;autofit();mountDice($('board'),'board');$('board').querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>openProp(+e.dataset.c));
  const {status,btn}=turnUI();
  let pl=S.players.map((q,j)=>{const own=Object.keys(S.props).filter(k=>S.props[k].owner===j);
   return `<div class="pl ${j===S.cur&&S.winner==null?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${S.net?(netOnline(j)?'🟢 ':'⚪ '):''}${esc(q.name)}${q.inJail?' 🔒':''}${q.cards.length?' 🎫':''}${q.shields&&q.shields.length?' 🛡️':''}${q.skip?' ⏸️':''}</span><span class="m" style="${q.money<0?'color:#c62828':''}">${S.net?'':M(q.money)}</span></div>${own.length?`<div class="chips">${own.map(k=>`<button class="chip" data-c="${k}" style="background:${SP[k].g?G[SP[k].g][0]:'#777'};${S.props[k].mort?'opacity:.45;':''}${SP[k].g==='yellow'||SP[k].g==='lb'?'color:#2a2230':''}">${esc(SP[k].name)}${S.props[k].houses?' '+(S.props[k].houses===5?'🏨':'🏠'+S.props[k].houses):''}</button>`).join('')}</div>`:''}`}).join('');
@@ -838,7 +864,7 @@ function renderClient(hadPrompt){const el=$('client');
  const ui=m.ui;
  el.innerHTML=`<div class="board cboard" id="cbv"></div><div class="box" style="margin-top:8px"><div class="me"><span class="big">${me.token}</span><span class="nmb">${esc(me.name)}${me.out?' (банкрот)':''}</span><span class="money" style="${me.money<0?'color:#c62828':''}">${M(me.money)}</span></div>
   <div style="font-size:14px;color:#7a3d60;margin-top:4px">📍 ${esc(SP[me.pos].name)}${me.inJail?' — в тюрьме 🔒':''}${me.cards.length?' · 🎫 выход из тюрьмы':''}${me.shields&&me.shields.length?' · 🛡️ отмена штрафа':''}${me.skip?' · ⏸️ пропуск хода':''}</div>
-  <div class="turnbar ${my?'my':''}">${turn}</div><div class="mydice">${dieHTML(S.dice[0])}${dieHTML(S.dice[1])}</div>
+  <div class="turnbar ${my?'my':''}">${turn}</div><div class="mydice"><div class="dice-ph"></div></div>
   ${my&&ui?`<div class="status">${ui.status}</div><div class="btns">${ui.btn}</div>`:(my&&busy?'<div class="status">Ходим…</div>':'')}
   ${!my&&me.money<0&&!me.out?debtBox(pid).replace(/<button class="btn bad" data-a="bankrupt">Объявить банкротство<\/button>/,'<p>Объявить банкротство можно будет в свой ход.</p>'):''}
  </div>
@@ -851,7 +877,7 @@ function renderClient(hadPrompt){const el=$('client');
   if(a==='new')return;if(a==='debt'){const [x,i]=b.dataset.v.split(':');csend({t:'prop',a:x,i:+i});return}csend({t:'act',a})});
  el.querySelectorAll('[data-c]').forEach(r=>r.onclick=()=>openProp(+r.dataset.c,(a,i)=>{csend({t:'prop',a,i});closeM()}));
  if($('ctrade'))$('ctrade').onclick=()=>{T={to:null};window.SUBMIT_TRADE=(from,to,g,t,gm,tm)=>csend({t:'trade',to,g,tt:t,gm,tm});drawTrade()};
- $('crules').onclick=openRules;{const bv=$('cbv');bv.className='board cboard '+thCls();bv.innerHTML=boardHTML();autofit(bv);animDice(bv,'cbv');animDice(el.querySelector('.mydice'),'my');bv.querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>openProp(+e.dataset.c,(a,i)=>{csend({t:'prop',a,i});closeM()}))}if($('cinv'))$('cinv').onclick=showJoinQR;
+ $('crules').onclick=openRules;{const bv=$('cbv');bv.className='board cboard '+thCls();bv.innerHTML=boardHTML();autofit(bv);mountDice(bv,'cbv');mountDice(el.querySelector('.mydice'),'my');bv.querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>openProp(+e.dataset.c,(a,i)=>{csend({t:'prop',a,i});closeM()}))}if($('cinv'))$('cinv').onclick=showJoinQR;
  if(CL.local&&!CL.warned){CL.warned=1;toast('Этот телефон ведёт игру — не закрывай вкладку и не блокируй экран надолго')}
  const pr=m.prompt;
  if(pr){if(!hadPrompt||hadPrompt!==pr.id){
