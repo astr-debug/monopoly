@@ -89,6 +89,17 @@ h3{margin:0 0 8px;font-size:15px;color:#9a4f78}
 .nsel button.on{background:#e2479b;color:#fff;border-color:#e2479b}
 .tr-col{margin-bottom:10px}.tr-col label{display:block;padding:4px 0}
 .tr-col input[type=number]{width:100%;font-size:16px;padding:8px;border:2px solid #f0cfe0;border-radius:10px}
+.tabs{display:flex;gap:6px;margin-bottom:10px}.tabs button{flex:1;padding:12px 6px;border-radius:12px;border:2px solid #f0cfe0;background:#fff;font-size:15px;font-family:inherit;cursor:pointer}.tabs button.on{background:#e2479b;color:#fff;border-color:#e2479b}
+.qrbox{background:#fff;border-radius:14px;padding:10px;display:flex;justify-content:center}.qrbox svg{width:min(70vw,300px);height:auto}
+.link{font-size:13px;word-break:break-all;background:#fdf1f6;padding:8px;border-radius:8px;margin-top:8px;user-select:all}
+.lob{display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;background:#fcf7fa;margin-bottom:6px;font-size:17px}.lob .x{margin-left:auto;border:0;background:none;font-size:18px;cursor:pointer}
+#client{max-width:480px;margin:0 auto}
+.me{display:flex;align-items:center;gap:12px}.me .big{font-size:44px}.me .nmb{font-weight:700;font-size:20px}.me .money{margin-left:auto;font-size:26px;font-weight:700}
+.turnbar{margin-top:8px;padding:8px 10px;border-radius:10px;background:#f3e6ee;font-weight:500}.turnbar.my{background:#22a052;color:#fff}
+.mydice{display:flex;gap:8px;justify-content:center;margin:10px 0}.mydice .die{width:46px;height:46px;padding:6px}
+.prow{display:flex;align-items:center;gap:8px;padding:9px 8px;border-radius:10px;background:#fcf7fa;margin-bottom:6px;cursor:pointer}.prow .sw{width:10px;align-self:stretch;border-radius:4px}.prow .r{margin-left:auto;font-size:13px;color:#7a3d60}
+.tokpick{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:8px 0}.tokpick button{font-size:24px;padding:6px 0;border-radius:10px;border:2px solid #f0cfe0;background:#fff;cursor:pointer}.tokpick button.on{border-color:#e2479b;background:#ffe4f1}.tokpick button:disabled{opacity:.3}
+.netwarn{background:#fff3cd;color:#6b4e00;padding:8px 10px;border-radius:10px;font-size:14px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -97,6 +108,7 @@ h3{margin:0 0 8px;font-size:15px;color:#9a4f78}
   <div class="board" id="board"></div>
   <div class="panel" id="panel"></div>
 </div>
+<div id="client" style="display:none"></div>
 <div id="ov"></div>
 <script>
 const G={brown:['#8d5524',50],lb:['#7fd1f2',50],pink:['#e2479b',100],orange:['#f39321',100],red:['#e03b3b',150],yellow:['#f5d327',150],green:['#22a052',200],blue:['#2350a8',200]};
@@ -241,24 +253,30 @@ function toast(m){const d=document.createElement('div');d.className='toast';d.te
 /* ---------- setup ---------- */
 let setupN=2;
 let setupData=[{name:'Лена',token:'💅'},{name:'Игрок 2',token:'🦊'}];
+let setupMode='net';
 function renderSetup(){
- $('app').style.display='none';$('setup').style.display='block';
+ $('app').style.display='none';$('client').style.display='none';$('setup').style.display='block';
+ if(setupMode==='net'){$('setup').innerHTML=`<div class="logo">Ленаполия</div><div class="tabs"><button class="on">📱 С телефонов</button><button data-mode="local">🖥 На одном экране</button></div>
+ <div class="box"><p>Поле будет на этом экране, а каждый игрок ходит со своего телефона: открывает ссылку или сканирует QR-код.</p><div class="btns"><button class="btn" id="mkroom">Создать комнату</button></div></div>`;
+ $('setup').querySelector('[data-mode]').onclick=()=>{setupMode='local';renderSetup()};$('mkroom').onclick=hostStart;return}
  while(setupData.length<setupN)setupData.push({name:'Игрок '+(setupData.length+1),token:TOKENS[setupData.length]});
- let h=`<div class="logo">Ленаполия</div><div class="box"><h3>Сколько игроков?</h3><div class="nsel">`;
+ let h=`<div class="logo">Ленаполия</div><div class="tabs"><button data-mode="net">📱 С телефонов</button><button class="on">🖥 На одном экране</button></div><div class="box"><h3>Сколько игроков?</h3><div class="nsel">`;
  for(let n=2;n<=8;n++)h+=`<button class="${n===setupN?'on':''}" data-n="${n}">${n}</button>`;
  h+=`</div><h3>Имена и фишки</h3>`;
  for(let i=0;i<setupN;i++){h+=`<div class="row"><select data-tk="${i}">${TOKENS.map(t=>`<option ${t===setupData[i].token?'selected':''}>${t}</option>`).join('')}</select><input data-nm="${i}" value="${esc(setupData[i].name)}" maxlength="14"></div>`}
  h+=`<div class="btns"><button class="btn" id="go">Начать игру</button></div></div>`;
  $('setup').innerHTML=h;
+ $('setup').querySelector('[data-mode]').onclick=()=>{setupMode='net';renderSetup()};
  $('setup').querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{readSetup();setupN=+b.dataset.n;renderSetup()});
  $('go').onclick=()=>{readSetup();newGame(setupData.slice(0,setupN))};
 }
 function readSetup(){$('setup').querySelectorAll('[data-nm]').forEach(e=>setupData[+e.dataset.nm].name=e.value.trim()||('Игрок '+(+e.dataset.nm+1)));$('setup').querySelectorAll('[data-tk]').forEach(e=>setupData[+e.dataset.tk].token=e.value)}
-function newGame(list){
+function newGame(list,net){
  S={players:list.map((p,i)=>({name:p.name,token:p.token,color:COLORS[i],money:1500,pos:0,inJail:false,jailTurns:0,cards:[],shields:[],skip:0,out:false,creditor:null})),
   props:{},cur:0,phase:'roll',dbl:0,dice:[3,4],canAgain:false,pendingBuy:null,log:[],winner:null,
   decks:{chance:shuffle([...CARDS.chance.keys()]),chest:shuffle([...CARDS.chest.keys()])},extra:false};
  SP.forEach((s,i)=>{if(s.price)S.props[i]={owner:null,houses:0,mort:false}});
+ if(net){S.net=true;S.room=NET.room;S.keys=list.map(l=>l.key);S.bc=NET.bc}
  log(`Игра началась! Первым ходит ${S.players[0].name}.`);
  $('setup').style.display='none';$('app').style.display='flex';save();render();
 }
@@ -308,9 +326,9 @@ async function drawCard(kind){const id=S.decks[kind].shift(),c=CARDS[kind][id];
 }
 
 async function fine(v){const p=P();if(p.shields&&p.shields.length){const use=await askShield(v);if(use){const [k,id]=p.shields.pop();S.decks[k].push(id);log(`${p.name} отменяет штраф ${M(v)} карточкой 🛡️`);return}}pay(S.cur,v,null)}
-function askShield(v){return new Promise(res=>{modal(`<div class="mh" style="background:#22a052">🛡️ Отменить штраф?</div><div class="mb"><p>Штраф ${M(v)}. У тебя есть карточка отмены штрафа.</p><div class="btns"><button class="btn ok" id="sy">Отменить штраф</button><button class="btn sec" id="sn">Заплатить</button></div></div>`);$('ovb').dataset.lock=1;$('sy').onclick=()=>{closeM();res(true)};$('sn').onclick=()=>{closeM();res(false)}})}
+function askShield(v){return ask(S.cur,'shield',{v},done=>{modal(`<div class="mh" style="background:#22a052">🛡️ Отменить штраф?</div><div class="mb"><p>${esc(P().name)}: штраф ${M(v)}. Есть карточка отмены штрафа.</p><div class="btns"><button class="btn ok" id="sy">Отменить штраф</button><button class="btn sec" id="sn">Заплатить</button></div></div>`);$('ovb').dataset.lock=1;$('sy').onclick=()=>done(true);$('sn').onclick=()=>done(false)})}
 /* ---------- turn actions ---------- */
-async function roll(){if(busy||S.phase!=='roll'||S.pendingBuy!=null)return;const p=P();if(p.money<0){toast('Сначала погаси долг');return}
+async function roll(){if(busy||PR||S.phase!=='roll'||S.pendingBuy!=null)return;const p=P();if(p.money<0){toast('Сначала погаси долг');return}
  busy=true;const a=r6(),b=r6(),d=a===b;S.dice=[a,b];render();await sleep(300);
  log(`${p.name} бросает ${a}+${b}${d?' — дубль!':''}`);
  if(p.inJail){
@@ -321,16 +339,16 @@ async function roll(){if(busy||S.phase!=='roll'||S.pendingBuy!=null)return;const
  S.canAgain=d;S.phase='moving';await stepMove(a+b);await land(a+b);
  if(S.extra){S.extra=false;S.canAgain=true}if(P().inJail)S.canAgain=false;S.phase='action';busy=false;save();render();
 }
-function rollAgain(){if(busy)return;S.phase='roll';S.canAgain=false;roll()}
-function payJail(){const p=P();if(p.money<50)return;pay(S.cur,50,null);p.inJail=false;p.jailTurns=0;log(`${p.name} платит 50 Ł и выходит из тюрьмы`);save();render()}
-function useCard(){const p=P();const k=p.cards.pop();if(!k)return;S.decks[k].push(CARDS[k].findIndex(c=>c.e==='goojf'));p.inJail=false;p.jailTurns=0;log(`${p.name} использует карточку «Выход из тюрьмы»`);save();render()}
-function buy(){const i=S.pendingBuy,p=P(),s=SP[i];if(i==null||p.money<s.price)return;pay(S.cur,s.price,null);S.props[i].owner=S.cur;S.pendingBuy=null;log(`${p.name} покупает «${s.name}» за ${M(s.price)}`);save();render()}
-function decline(){const s=SP[S.pendingBuy];S.pendingBuy=null;log(`${P().name} не покупает «${s.name}»`);save();render()}
-function endTurn(){if(busy||S.pendingBuy!=null)return;if(P().money<0){toast('Сначала погаси долг');return}
+function rollAgain(){if(busy||PR)return;S.phase='roll';S.canAgain=false;roll()}
+function payJail(){const p=P();if(busy||PR||S.phase!=='roll'||!p.inJail||p.money<50)return;pay(S.cur,50,null);p.inJail=false;p.jailTurns=0;log(`${p.name} платит 50 Ł и выходит из тюрьмы`);save();render()}
+function useCard(){const p=P();if(busy||PR||S.phase!=='roll'||!p.inJail||!p.cards.length)return;const k=p.cards.pop();S.decks[k].push(CARDS[k].findIndex(c=>c.e==='goojf'));p.inJail=false;p.jailTurns=0;log(`${p.name} использует карточку «Выход из тюрьмы»`);save();render()}
+function buy(){if(PR)return;const i=S.pendingBuy,p=P(),s=SP[i];if(i==null||p.money<s.price)return;pay(S.cur,s.price,null);S.props[i].owner=S.cur;S.pendingBuy=null;log(`${p.name} покупает «${s.name}» за ${M(s.price)}`);save();render()}
+function decline(){if(PR||S.pendingBuy==null)return;const s=SP[S.pendingBuy];S.pendingBuy=null;log(`${P().name} не покупает «${s.name}»`);save();render()}
+function endTurn(){if(busy||PR||S.pendingBuy!=null)return;if(P().money<0){toast('Сначала погаси долг');return}
  S.dbl=0;S.canAgain=false;nextPlayer();save();render()}
 function nextPlayer(){let n=S.cur;for(;;){n=(n+1)%S.players.length;const q=S.players[n];if(q.out)continue;if(q.skip>0){q.skip--;log(`${q.name} пропускает ход`);continue}break}S.cur=n;S.phase='roll';S.dbl=0;S.canAgain=false;S.pendingBuy=null;
  const p=P();log(`Ход: ${p.name}${p.inJail?' (в тюрьме)':''}`)}
-function bankrupt(){const pi=S.cur,p=P();if(p.money>=0)return;const cr=p.creditor;
+function bankrupt(){if(busy||PR)return;const pi=S.cur,p=P();if(p.money>=0)return;const cr=p.creditor;
  Object.keys(S.props).forEach(k=>{const pr=S.props[k];if(pr.owner===pi){p.money+=pr.houses*G[SP[k].g]?.[1]/2||0;pr.houses=0;
   if(cr!=null&&!S.players[cr].out)pr.owner=cr;else{pr.owner=null;pr.mort=false}}});
  if(cr!=null&&!S.players[cr].out&&p.money<0)S.players[cr].money+=p.money;
@@ -347,32 +365,35 @@ function canSell(i){const s=SP[i],pr=S.props[i];if(s.t!=='street'||pr.owner!==S.
 function canMort(i){const s=SP[i],pr=S.props[i];if(pr.owner!==S.cur||pr.mort)return false;return s.t!=='street'||grp(s.g).every(j=>S.props[j].houses===0)}
 const unmortCost=i=>Math.ceil(SP[i].price*0.55);
 function canUnmort(i){const pr=S.props[i];return pr.owner===S.cur&&pr.mort&&P().money>=unmortCost(i)}
-function doProp(act,i){if(busy)return;const s=SP[i],pr=S.props[i],p=P();
+function doProp(act,i,remote){if(busy||PR)return;const s=SP[i],pr=S.props[i],p=P();
  if(act==='build'&&canBuild(i)){pay(S.cur,hcost(i),null);pr.houses++;log(`${p.name} строит ${pr.houses===5?'отель':'дом'} на «${s.name}»`)}
  if(act==='sell'&&canSell(i)){pr.houses--;p.money+=hcost(i)/2;log(`${p.name} продаёт постройку на «${s.name}» (+${M(hcost(i)/2)})`)}
  if(act==='mort'&&canMort(i)){pr.mort=true;p.money+=s.price/2;log(`${p.name} закладывает «${s.name}» (+${M(s.price/2)})`)}
  if(act==='unmort'&&canUnmort(i)){pay(S.cur,unmortCost(i),null);pr.mort=false;log(`${p.name} выкупает «${s.name}» (−${M(unmortCost(i))})`)}
- save();render();openProp(i)}
+ save();render();if(!remote)openProp(i)}
 
 /* ---------- modals ---------- */
 function modal(html){$('ov').innerHTML=`<div class="ov" id="ovb"><div class="md">${html}</div></div>`;$('ovb').onclick=e=>{if(e.target.id==='ovb'&&!$('ovb').dataset.lock)closeM()}}
 function closeM(){$('ov').innerHTML=''}
-function showCard(kind,text){return new Promise(res=>{modal(`<div class="mh" style="background:${kind==='chance'?'#f39321':'#e2479b'}">${kind==='chance'?'❓ Шанс':'💬 Сплетни'}</div><div class="mb"><div class="card-t">${esc(text)}</div><div class="btns"><button class="btn" id="cok">Ок</button></div></div>`);$('ovb').dataset.lock=1;$('cok').onclick=()=>{closeM();res()}})}
+function showCard(kind,text){return ask(S.cur,'card',{kind,text},done=>{modal(`<div class="mh" style="background:${kind==='chance'?'#f39321':'#e2479b'}">${kind==='chance'?'❓ Шанс':'💬 Сплетни'}</div><div class="mb"><div class="card-t">${esc(text)}</div><div class="btns"><button class="btn" id="cok">Ок</button></div></div>`);$('ovb').dataset.lock=1;$('cok').onclick=()=>done(true)})}
+let PR=null;
+function ask(pid,kind,data,hostUI){return new Promise(res=>{const id=Math.random().toString(36).slice(2,9);PR={id,pid,kind,data,done:v=>{if(!PR||PR.id!==id)return;PR=null;closeM();res(v);pushState()}};hostUI(PR.done);pushState()})}
+function answer(pid,id,v){if(PR&&PR.id===id&&PR.pid===pid)PR.done(v)}
 const INFO={go:'Каждый раз, когда проходишь или встаёшь на Старт, получаешь 200 ленокоинов.',jail:'Если просто встал(а) сюда — ты в гостях. Из тюрьмы можно выйти: заплатить 50 ленокоинов, использовать карточку или выбросить дубль (три попытки, после третьей платишь 50 ленокоинов).',
  park:'Ничего не происходит. Просто отдыхай на лавочке.',gotojail:'Сразу отправляешься в Тюрьму, Старт не проходишь и 200 ленокоинов не получаешь.',
  chance:'Тяни карточку «Шанс».',chest:'Тяни карточку «Сплетни».'};
-function openProp(i){const s=SP[i];
+function openProp(i,onAct){const s=SP[i];
  if(!s.price){let t=INFO[s.t]||'';if(s.t==='tax')t=`Заплати банку ${M(s.amt)}.`;modal(`<div class="mh" style="background:#9a4f78">${s.ic} ${esc(s.name)}</div><div class="mb">${t}<div class="btns"><button class="btn sec" onclick="closeM()">Закрыть</button></div></div>`);return}
  const pr=S.props[i],own=pr.owner!=null?S.players[pr.owner]:null;let body='',col='#555';
  if(s.t==='street'){col=G[s.g][0];const r=s.rent;body=`<table><tr><td>Аренда</td><td>${M(r[0])}</td></tr><tr><td>Вся группа, без домов</td><td>${M(r[0]*2)}</td></tr>${[1,2,3,4].map(n=>`<tr><td>С ${n} ${n===1?'домом':'домами'}</td><td>${M(r[n])}</td></tr>`).join('')}<tr><td>С отелем</td><td>${M(r[5])}</td></tr></table><p>Дом стоит ${M(G[s.g][1])}, отель — ${M(G[s.g][1])} и 4 дома.<br>Залог: ${M(s.price/2)}</p>`}
  else if(s.t==='taxi'){col='#f5d327';body=`<table><tr><td>1 такси</td><td>25 Ł</td></tr><tr><td>2 такси</td><td>50 Ł</td></tr><tr><td>3 такси</td><td>100 Ł</td></tr><tr><td>4 такси</td><td>200 Ł</td></tr></table><p>Залог: 100 Ł</p>`}
  else{col='#7a7a7a';body=`<p>Одна из двух — аренда 4× сумма на кубиках.<br>Обе — 10× сумма на кубиках.</p><p>Залог: 75 Ł</p>`}
  let st2=`<p><b>Цена:</b> ${M(s.price)}<br><b>Владелец:</b> ${own?esc(own.token+' '+own.name):'банк'}${pr.mort?' <b>(в залоге)</b>':''}${s.t==='street'&&pr.houses?`<br><b>Построено:</b> ${pr.houses===5?'отель':pr.houses+' дом.'}`:''}</p>`;
- let b='';if(pr.owner===S.cur&&!busy&&S.winner==null){
+ let b='';if(pr.owner===S.cur&&!busy&&S.winner==null&&(!onAct||pr.owner===CL.pid)){
   if(s.t==='street')b+=`<button class="btn ok" ${canBuild(i)?'':'disabled'} data-pa="build">Построить${pr.houses===4?' отель':' дом'} −${M(hcost(i))}</button><button class="btn sec" ${canSell(i)?'':'disabled'} data-pa="sell">Продать постройку +${M(hcost(i)/2)}</button>`;
   b+=pr.mort?`<button class="btn" ${canUnmort(i)?'':'disabled'} data-pa="unmort">Выкупить −${M(unmortCost(i))}</button>`:`<button class="btn sec" ${canMort(i)?'':'disabled'} data-pa="mort">Заложить +${M(s.price/2)}</button>`}
  modal(`<div class="mh" style="background:${col};${s.t==='taxi'||s.g==='yellow'||s.g==='lb'?'color:#2a2230':''}">${s.ic?s.ic+' ':''}${esc(s.name)}</div><div class="mb">${st2}${body}<div class="btns">${b}<button class="btn sec" onclick="closeM()">Закрыть</button></div>${s.t==='street'&&pr.owner===S.cur?'<p style="font-size:12px;color:#888">Строить можно, когда у тебя вся группа и нет залогов. Дома ставятся равномерно.</p>':''}</div>`);
- $('ov').querySelectorAll('[data-pa]').forEach(e=>e.onclick=()=>doProp(e.dataset.pa,i));
+ $('ov').querySelectorAll('[data-pa]').forEach(e=>e.onclick=()=>(onAct||doProp)(e.dataset.pa,i));
 }
 function tradable(pi){return Object.keys(S.props).map(Number).filter(i=>{const pr=S.props[i];if(pr.owner!==pi)return false;return SP[i].t!=='street'||grp(SP[i].g).every(j=>S.props[j].houses===0)})}
 function openTrade(){if(busy||S.winner!=null)return;T={to:null};drawTrade()}
@@ -387,10 +408,17 @@ function drawTrade(){const me=P();let h=`<div class="mh" style="background:#8e44
  modal(h);$('tprop').onclick=()=>{const g=[...$('ov').querySelectorAll('input[name=g]:checked')].map(e=>+e.value),t=[...$('ov').querySelectorAll('input[name=t]:checked')].map(e=>+e.value);
   const gm=Math.max(0,parseInt($('gm').value)||0),tm=Math.max(0,parseInt($('tm').value)||0);
   if(!g.length&&!t.length&&!gm&&!tm){toast('Выбери, что меняем');return}if(gm>Math.max(0,me.money)||tm>Math.max(0,o.money)){toast('Не хватает денег');return}
-  const sum=(arr,m)=>[...arr.map(i=>SP[i].name),...(m?[M(m)]:[])].join(', ')||'ничего';
-  modal(`<div class="mh" style="background:#8e44ad">🤝 ${esc(o.name)}, согласен(на)?</div><div class="mb"><p><b>${esc(me.name)}</b> отдаёт: ${esc(sum(g,gm))}</p><p><b>${esc(o.name)}</b> отдаёт: ${esc(sum(t,tm))}</p><div class="btns"><button class="btn ok" id="tacc">Принять</button><button class="btn bad" id="trej">Отказаться</button></div></div>`);
-  $('tacc').onclick=()=>{g.forEach(i=>S.props[i].owner=T.to);t.forEach(i=>S.props[i].owner=S.cur);me.money+=tm-gm;o.money+=gm-tm;log(`🤝 Обмен: ${me.name} ↔ ${o.name}`);closeM();save();render()};
-  $('trej').onclick=()=>{log(`${o.name} отказывается от обмена`);closeM();render()}}}
+  closeM();(window.SUBMIT_TRADE||proposeTrade)(S.cur,T.to,g,t,gm,tm)}}
+const tradeSum=(arr,m)=>[...arr.map(i=>SP[i].name),...(m?[M(m)]:[])].join(', ')||'ничего';
+async function proposeTrade(from,to,g,t,gm,tm){if(busy||PR||S.winner!=null||from!==S.cur||to===from||!S.players[to]||S.players[to].out)return;
+ g=(g||[]).map(Number);t=(t||[]).map(Number);gm=Math.max(0,+gm||0);tm=Math.max(0,+tm||0);
+ const okNow=()=>g.every(i=>tradable(from).includes(i))&&t.every(i=>tradable(to).includes(i))&&gm<=Math.max(0,S.players[from].money)&&tm<=Math.max(0,S.players[to].money);
+ if(!okNow()||(!g.length&&!t.length&&!gm&&!tm))return;
+ const me=S.players[from],o=S.players[to];log(`🤝 ${me.name} предлагает обмен ${o.name}`);render();
+ const ok=await ask(to,'trade',{from,to,give:tradeSum(g,gm),get:tradeSum(t,tm)},done=>{modal(`<div class="mh" style="background:#8e44ad">🤝 ${esc(o.name)}, согласен(на)?</div><div class="mb"><p><b>${esc(me.name)}</b> отдаёт: ${esc(tradeSum(g,gm))}</p><p><b>${esc(o.name)}</b> отдаёт: ${esc(tradeSum(t,tm))}</p><div class="btns"><button class="btn ok" id="tacc">Принять</button><button class="btn bad" id="trej">Отказаться</button></div></div>`);$('ovb').dataset.lock=1;$('tacc').onclick=()=>done(true);$('trej').onclick=()=>done(false)});
+ if(ok&&okNow()){g.forEach(i=>S.props[i].owner=to);t.forEach(i=>S.props[i].owner=from);me.money+=tm-gm;o.money+=gm-tm;log(`🤝 Обмен состоялся: ${me.name} ↔ ${o.name}`)}
+ else log(`${o.name} отказывается от обмена`);
+ save();render()}
 function openRules(){modal(`<div class="mh" style="background:#e2479b">Правила</div><div class="mb" style="font-size:14px">
 <p>У каждого 1500 ленокоинов. Бросай кубики, ходи по полю, покупай места и бери аренду с тех, кто на них встаёт.</p>
 <p><b>Дубль</b> — ходишь ещё раз. Три дубля подряд — в Тюрьму.</p>
@@ -402,9 +430,19 @@ function openRules(){modal(`<div class="mh" style="background:#e2479b">Прав�
 <p>Нажми на любую клетку, чтобы посмотреть её карточку.</p>
 <div class="btns"><button class="btn sec" onclick="closeM()">Понятно</button></div></div>`)}
 function askNew(){modal(`<div class="mh" style="background:#c62828">Новая игра?</div><div class="mb"><p>Текущая партия удалится.</p><div class="btns"><button class="btn bad" id="nyes">Да, заново</button><button class="btn sec" onclick="closeM()">Отмена</button></div></div>`);
- $('nyes').onclick=()=>{closeM();S=null;try{localStorage.removeItem(SAVE)}catch(e){}renderSetup()}}
+ $('nyes').onclick=()=>{closeM();S=null;NET.who={};NET.lobby=[];try{localStorage.removeItem(SAVE)}catch(e){}renderSetup()}}
 
 /* ---------- render ---------- */
+function turnUI(){const p=P();
+ let status='',btn='';
+ if(S.winner!=null){status=`🏆 ${esc(S.players[S.winner].name)} побеждает в Ленаполии!`;btn=`<button class="btn" data-a="new">Новая игра</button>`}
+ else if(busy){status='Ходим…'}
+ else if(S.pendingBuy!=null){const s=SP[S.pendingBuy];status=`«${esc(s.name)}» никому не принадлежит.`;btn=`<button class="btn ok" data-a="buy" ${p.money<s.price?'disabled':''}>Купить за ${M(s.price)}</button><button class="btn sec" data-a="decline">Не покупать</button>`}
+ else if(p.money<0){status=`Долг ${M(-p.money)}. Продай дома или заложи места — нажми на свои клетки. Или объяви банкротство.`;btn=`<button class="btn bad" data-a="bankrupt">Объявить банкротство</button>`}
+ else if(S.phase==='roll'){if(p.inJail){status=`В тюрьме (попытка ${p.jailTurns+1} из 3).`;btn=`<button class="btn" data-a="roll">Бросить на дубль</button><button class="btn sec" data-a="payjail" ${p.money<50?'disabled':''}>Заплатить 50 Ł</button>${p.cards.length?'<button class="btn ok" data-a="card">Карточка выхода</button>':''}`}else{btn=`<button class="btn" data-a="roll">🎲 Бросить кубики</button>`}}
+ else if(S.phase==='action'){if(S.canAgain){status='Дубль! Ходи ещё раз.';btn=`<button class="btn" data-a="again">🎲 Бросить ещё раз</button>`}else btn=`<button class="btn" data-a="end">Закончить ход</button>`}
+ if(PR&&!busy){const w=S.players[PR.pid];return{status:PR.kind==='trade'?`Ждём ответ на обмен: ${esc(w.name)}`:status,btn:PR.kind==='trade'?'':btn}}
+ return {status,btn}}
 const PIPS={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
 const dieHTML=n=>`<div class="die">${[1,2,3,4,5,6,7,8,9].map(k=>PIPS[n].includes(k)?'<div class="pip"></div>':'<div></div>').join('')}</div>`;
 function gp(i){if(i<=10)return[11,11-i];if(i<=20)return[11-(i-10),1];if(i<=30)return[1,1+(i-20)];return[1+(i-30),11]}
@@ -428,28 +466,167 @@ function render(){if(!S)return;const p=P();
  let h=SP.map((_,i)=>cellHTML(i)).join('');
  h+=`<div class="center"><div class="slot cs"><b>💬</b>Сплетни</div><div class="slot ch"><b>?</b>Шанс</div><div class="banner">ЛЕНАПОЛИЯ</div><div class="cdice">${dieHTML(S.dice[0])}${dieHTML(S.dice[1])}</div><div class="cturn">${S.winner!=null?'🏆<br>'+esc(S.players[S.winner].name):tokHTML(p)+'ходит<br>'+esc(p.name)}</div></div>`;
  $('board').innerHTML=h;autofit();$('board').querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>openProp(+e.dataset.c));
- let status='',btn='';
- if(S.winner!=null){status=`🏆 ${esc(S.players[S.winner].name)} побеждает в Ленаполии!`;btn=`<button class="btn" data-a="new">Новая игра</button>`}
- else if(busy){status='Ходим…'}
- else if(S.pendingBuy!=null){const s=SP[S.pendingBuy];status=`«${esc(s.name)}» никому не принадлежит.`;btn=`<button class="btn ok" data-a="buy" ${p.money<s.price?'disabled':''}>Купить за ${M(s.price)}</button><button class="btn sec" data-a="decline">Не покупать</button>`}
- else if(p.money<0){status=`Долг ${M(-p.money)}. Продай дома или заложи места — нажми на свои клетки. Или объяви банкротство.`;btn=`<button class="btn bad" data-a="bankrupt">Объявить банкротство</button>`}
- else if(S.phase==='roll'){if(p.inJail){status=`В тюрьме (попытка ${p.jailTurns+1} из 3).`;btn=`<button class="btn" data-a="roll">Бросить на дубль</button><button class="btn sec" data-a="payjail" ${p.money<50?'disabled':''}>Заплатить 50 Ł</button>${p.cards.length?'<button class="btn ok" data-a="card">Карточка выхода</button>':''}`}else{btn=`<button class="btn" data-a="roll">🎲 Бросить кубики</button>`}}
- else if(S.phase==='action'){if(S.canAgain){status='Дубль! Ходи ещё раз.';btn=`<button class="btn" data-a="again">🎲 Бросить ещё раз</button>`}else btn=`<button class="btn" data-a="end">Закончить ход</button>`}
+ const {status,btn}=turnUI();
  let pl=S.players.map((q,j)=>{const own=Object.keys(S.props).filter(k=>S.props[k].owner===j);
-  return `<div class="pl ${j===S.cur&&S.winner==null?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${esc(q.name)}${q.inJail?' 🔒':''}${q.cards.length?' 🎫':''}${q.shields&&q.shields.length?' 🛡️':''}${q.skip?' ⏸️':''}</span><span class="m" style="${q.money<0?'color:#c62828':''}">${M(q.money)}</span></div>${own.length?`<div class="chips">${own.map(k=>`<button class="chip" data-c="${k}" style="background:${SP[k].g?G[SP[k].g][0]:'#777'};${S.props[k].mort?'opacity:.45;':''}${SP[k].g==='yellow'||SP[k].g==='lb'?'color:#2a2230':''}">${esc(SP[k].name)}${S.props[k].houses?' '+(S.props[k].houses===5?'🏨':'🏠'+S.props[k].houses):''}</button>`).join('')}</div>`:''}`}).join('');
+  return `<div class="pl ${j===S.cur&&S.winner==null?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${S.net?(netOnline(j)?'🟢 ':'⚪ '):''}${esc(q.name)}${q.inJail?' 🔒':''}${q.cards.length?' 🎫':''}${q.shields&&q.shields.length?' 🛡️':''}${q.skip?' ⏸️':''}</span><span class="m" style="${q.money<0?'color:#c62828':''}">${M(q.money)}</span></div>${own.length?`<div class="chips">${own.map(k=>`<button class="chip" data-c="${k}" style="background:${SP[k].g?G[SP[k].g][0]:'#777'};${S.props[k].mort?'opacity:.45;':''}${SP[k].g==='yellow'||SP[k].g==='lb'?'color:#2a2230':''}">${esc(SP[k].name)}${S.props[k].houses?' '+(S.props[k].houses===5?'🏨':'🏠'+S.props[k].houses):''}</button>`).join('')}</div>`:''}`}).join('');
  $('panel').innerHTML=`<div class="box"><div class="cur"><span class="big">${p.token}</span><span class="nmb">${esc(p.name)}</span><span class="money">${M(p.money)}</span></div><div class="status">${status}</div><div class="btns">${btn}</div></div>
- <div class="box"><h3>Игроки</h3>${pl}<div class="btns"><button class="btn sec" data-a="trade">🤝 Обмен</button><button class="btn sec" data-a="rules">Правила</button><button class="btn sec" data-a="new">Новая игра</button></div></div>
+ <div class="box"><h3>Игроки</h3>${pl}<div class="btns"><button class="btn sec" data-a="trade">🤝 Обмен</button><button class="btn sec" data-a="rules">Правила</button><button class="btn sec" data-a="new">Новая игра</button>${S.net?'<button class="btn sec" data-a="qr">📱 QR для входа</button>':''}</div></div>
  <div class="box"><h3>Что происходит</h3><div class="log">${S.log.map(m=>`<div>${esc(m)}</div>`).join('')}</div></div>`;
  $('panel').querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>openProp(+e.dataset.c));
- const A={roll,again:rollAgain,end:endTurn,buy,decline,payjail:payJail,card:useCard,bankrupt:()=>modal(`<div class="mh" style="background:#c62828">Банкротство?</div><div class="mb"><p>${esc(p.name)} выбывает из игры.</p><div class="btns"><button class="btn bad" id="bk">Да</button><button class="btn sec" onclick="closeM()">Отмена</button></div></div>`)||($('bk').onclick=()=>{closeM();bankrupt()}),trade:openTrade,rules:openRules,new:askNew};
- $('panel').querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>A[e.dataset.a]());
+ const A={roll,again:rollAgain,end:endTurn,buy,decline,payjail:payJail,card:useCard,bankrupt:()=>modal(`<div class="mh" style="background:#c62828">Банкротство?</div><div class="mb"><p>${esc(p.name)} выбывает из игры.</p><div class="btns"><button class="btn bad" id="bk">Да</button><button class="btn sec" onclick="closeM()">Отмена</button></div></div>`)||($('bk').onclick=()=>{closeM();bankrupt()}),trade:openTrade,rules:openRules,new:askNew,qr:showJoinQR};
+ $('panel').querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>A[e.dataset.a]&&A[e.dataset.a]());
+ pushState();
 }
 
 /* ---------- start ---------- */
 try{document.fonts.ready.then(()=>{if(S)render()})}catch(e){}
 let rzT;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(S)render()},150)});
+</script>
+<script>
+/* ================= NETWORK (laptop = host, phones = clients) ================= */
+const QS=new URLSearchParams(location.search);
+const NET={mode:null,room:null,tx:null,who:{},cids:new Set(),lobby:[],bc:false};
+const CL={room:null,key:null,tx:null,state:null,lobby:null,pid:-1,status:'connecting',started:false};
+const PEER_URLS=['https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js','https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js','https://unpkg.com/peerjs@1.5.3/dist/peerjs.min.js'];
+const QR_URLS=['https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js','https://unpkg.com/qrcode-generator@1.4.4/qrcode.js'];
+function loadScript(urls){return new Promise((res,rej)=>{let i=0;const next=()=>{if(i>=urls.length)return rej(new Error('load'));const el=document.createElement('script');el.src=urls[i++];el.onload=()=>res();el.onerror=()=>{el.remove();next()};document.head.appendChild(el)};next()})}
+const rid=n=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';for(let i=0;i<n;i++)r+=A[Math.floor(Math.random()*A.length)];return r};
+const peerId=room=>'lenapoly-'+room.toLowerCase();
+const joinURL=()=>location.origin+location.pathname+'?join='+NET.room+(NET.bc?'&bc=1':'');
+const netOnline=pid=>Object.values(NET.who).includes(pid);
+const NETFAIL='Не получилось подключиться к сервису связи. Режим с телефонов работает, когда игра открыта по ссылке на GitHub Pages (astr-debug.github.io/monopoly), а не внутри Claude.';
+
+/* ---- transports ---- */
+function hostTransport(room,onMsg,onReady,onFail){
+ if(NET.bc){const bc=new BroadcastChannel('lp-'+room);bc.onmessage=e=>{const d=e.data;if(d.to==='host')onMsg(d.from,d.m)};setTimeout(onReady,0);return{send:(id,m)=>bc.postMessage({to:id,m})}}
+ const conns={};let tries=0,peer;
+ const make=()=>{peer=new Peer(peerId(room));
+  peer.on('open',()=>{tries=0;onReady()});
+  peer.on('connection',c=>{c.on('open',()=>{conns[c.peer]=c});c.on('data',d=>onMsg(c.peer,d));c.on('close',()=>{delete conns[c.peer];for(const k in NET.who)if(k===c.peer)delete NET.who[k];if(S)render()})});
+  peer.on('disconnected',()=>{try{peer.reconnect()}catch(e){}});
+  peer.on('error',e=>{if(e.type==='unavailable-id'&&tries<15){tries++;try{peer.destroy()}catch(x){}setTimeout(make,3000)}else if(['network','server-error','socket-error','browser-incompatible','ssl-unavailable'].includes(e.type)){onFail&&onFail(e)}})};
+ make();
+ return{send:(id,m)=>{const c=conns[id];if(c&&c.open){try{c.send(m)}catch(e){}}}};
+}
+function clientTransport(room,onMsg,onStatus){
+ if(QS.get('bc')){const id='c'+rid(8);const bc=new BroadcastChannel('lp-'+room);bc.onmessage=e=>{if(e.data.to===id)onMsg(e.data.m)};setTimeout(()=>onStatus('open'),50);return{send:m=>bc.postMessage({to:'host',from:id,m}),check(){}}}
+ const peer=new Peer();let conn=null,timer=null;
+ const connect=()=>{clearTimeout(timer);if(conn&&conn.open)return;try{conn&&conn.close()}catch(e){}
+  conn=peer.connect(peerId(room),{reliable:true});
+  conn.on('open',()=>onStatus('open'));conn.on('data',onMsg);
+  conn.on('close',()=>{onStatus('closed');timer=setTimeout(connect,2000)});conn.on('error',()=>{})};
+ peer.on('open',connect);
+ peer.on('disconnected',()=>{try{peer.reconnect()}catch(e){}});
+ peer.on('error',e=>{if(e.type==='peer-unavailable'){onStatus('nohost');timer=setTimeout(connect,3000)}else if(['network','server-error','socket-error'].includes(e.type)){onStatus('neterr')}});
+ return{send:m=>{if(conn&&conn.open){try{conn.send(m)}catch(e){}}},check(){if(peer.disconnected){try{peer.reconnect()}catch(e){}}if(!conn||!conn.open)connect()}};
+}
+
+/* ---- host ---- */
+async function hostStart(){NET.bc=!!QS.get('bc');NET.room=rid(5);NET.lobby=[];NET.who={};NET.mode='host';
+ $('setup').innerHTML=`<div class="logo">Ленаполия</div><div class="box"><p>Создаём комнату…</p></div>`;
+ try{if(!NET.bc)await loadScript(PEER_URLS)}catch(e){$('setup').innerHTML+=`<div class="netwarn">${NETFAIL}</div>`;return}
+ NET.tx=hostTransport(NET.room,onHostMsg,renderLobby,()=>{$('setup').insertAdjacentHTML('beforeend',`<div class="netwarn">${NETFAIL}</div>`)});
+ loadScript(QR_URLS).then(()=>{if(!S)renderLobby()}).catch(()=>{});
+}
+async function hostResume(){NET.mode='host';NET.room=S.room;NET.bc=!!S.bc;
+ try{if(!NET.bc)await loadScript(PEER_URLS)}catch(e){toast('Нет связи с сервисом для телефонов');return}
+ NET.tx=hostTransport(NET.room,onHostMsg,()=>render(),()=>toast('Нет связи с сервисом для телефонов'));
+ loadScript(QR_URLS).catch(()=>{});
+}
+function qrSVG(url){try{const q=qrcode(0,'M');q.addData(url);q.make();return q.createSvgTag({cellSize:6,margin:2,scalable:true})}catch(e){return ''}}
+function renderLobby(){if(S)return;const url=joinURL();
+ $('setup').innerHTML=`<div class="logo">Ленаполия</div>
+ <div class="box"><h3>Отсканируйте QR или откройте ссылку на телефоне</h3><div class="qrbox">${qrSVG(url)||'<p>QR загружается…</p>'}</div><div class="link">${esc(url)}</div><p style="font-size:14px;color:#7a3d60">Код комнаты: <b style="font-size:20px">${NET.room}</b></p></div>
+ <div class="box"><h3>Игроки (${NET.lobby.length}/8)</h3>${NET.lobby.map((l,i)=>`<div class="lob"><span style="font-size:26px">${l.token}</span><span>${esc(l.name)}</span>${l.cid&&NET.cids.has(l.cid)?'':' <small>(нет связи)</small>'}<button class="x" data-kick="${i}" title="Убрать">✕</button></div>`).join('')||'<p>Пока никого. Ждём телефоны…</p>'}
+ <div class="btns"><button class="btn" id="startnet" ${NET.lobby.length<2?'disabled':''}>Начать игру</button><button class="btn sec" id="cancelnet">Отмена</button></div></div>`;
+ $('startnet').onclick=()=>{if(NET.lobby.length<2)return;const L=NET.lobby;newGame(L.map(l=>({name:l.name,token:l.token,key:l.key})),true);NET.who={};L.forEach((l,i)=>{if(l.cid)NET.who[l.cid]=i});render()};
+ $('cancelnet').onclick=()=>location.reload();
+ $('setup').querySelectorAll('[data-kick]').forEach(b=>b.onclick=()=>{NET.lobby.splice(+b.dataset.kick,1);renderLobby();sendLobby()});
+}
+function sendLobby(){const pl=NET.lobby.map(x=>({name:x.name,token:x.token}));NET.cids.forEach(cid=>{const me=NET.lobby.findIndex(l=>l.cid===cid);NET.tx.send(cid,{t:'lobby',players:pl,me})})}
+function onHostMsg(cid,m){if(!m||typeof m!=='object')return;NET.cids.add(cid);
+ if(m.t==='hello'||m.t==='join'){
+  if(S&&S.net){const pid=S.keys.indexOf(m.key);if(pid>=0){for(const k in NET.who)if(NET.who[k]===pid)delete NET.who[k];NET.who[cid]=pid;render()}else NET.tx.send(cid,{t:'started'});return}
+  if(S)return;
+  let l=NET.lobby.find(x=>x.key===m.key);
+  if(m.t==='join'){if(!l){if(NET.lobby.length>=8){NET.tx.send(cid,{t:'full'});return}l={key:String(m.key).slice(0,40)};NET.lobby.push(l)}
+   l.name=String(m.name||'').trim().slice(0,14)||'Игрок';l.token=TOKENS.includes(m.token)?m.token:TOKENS[0]}
+  if(l)l.cid=cid;renderLobby();sendLobby();return}
+ const pid=NET.who[cid];if(pid==null||!S||S.winner!=null&&m.t!=='answer')return;
+ if(m.t==='act'){if(pid!==S.cur)return;const F={roll,again:rollAgain,end:endTurn,buy,decline,payjail:payJail,card:useCard,bankrupt}[m.a];F&&F()}
+ else if(m.t==='prop'){if(pid===S.cur&&['build','sell','mort','unmort'].includes(m.a))doProp(m.a,+m.i,true)}
+ else if(m.t==='answer')answer(pid,m.id,m.v);
+ else if(m.t==='trade'){if(pid===S.cur)proposeTrade(pid,+m.to,m.g,m.tt,m.gm,m.tm)}
+}
+function pushState(){if(NET.mode!=='host'||!NET.tx||!S||!S.net)return;
+ const snap=JSON.parse(JSON.stringify(S));delete snap.keys;snap.log=snap.log.slice(0,15);
+ for(const cid in NET.who){const pid=NET.who[cid];NET.tx.send(cid,{t:'state',S:snap,you:pid,busy,prompt:PR&&PR.pid===pid?{id:PR.id,kind:PR.kind,data:PR.data}:null,ui:pid===S.cur&&!PR?turnUI():null})}}
+function showJoinQR(){const url=joinURL();modal(`<div class="mh" style="background:#e2479b">📱 Вход с телефона</div><div class="mb"><div class="qrbox">${qrSVG(url)}</div><div class="link">${esc(url)}</div><p style="font-size:14px">Если телефон отключился, просто откройте ссылку снова — игрок вернётся в игру.</p><div class="btns"><button class="btn sec" onclick="closeM()">Закрыть</button></div></div>`)}
+
+/* ---- phone ---- */
+async function clientStart(room){CL.room=room;$('setup').style.display='none';$('app').style.display='none';$('client').style.display='block';
+ const ks=QS.get('bc')?sessionStorage:localStorage;try{CL.key=ks.getItem('lp-key-'+room)||rid(16);ks.setItem('lp-key-'+room,CL.key)}catch(e){CL.key=CL.key||rid(16)}
+ renderClient();
+ try{if(!QS.get('bc'))await loadScript(PEER_URLS)}catch(e){CL.status='neterr';renderClient();return}
+ CL.tx=clientTransport(room,onClientMsg,st=>{CL.status=st;if(st==='open')CL.tx.send({t:'hello',key:CL.key});renderClient()});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&CL.tx)CL.tx.check()});
+}
+function onClientMsg(m){if(!m)return;
+ if(m.t==='lobby'){CL.lobby=m;CL.state=null;renderClient()}
+ else if(m.t==='started'){CL.started=true;CL.state=null;renderClient()}
+ else if(m.t==='full'){toast('Комната заполнена');}
+ else if(m.t==='state'){const hadPrompt=CL.state&&CL.state.prompt&&CL.state.prompt.id;CL.state=m;CL.pid=m.you;S=m.S;busy=m.busy;renderClient(hadPrompt)}}
+const csend=m=>CL.tx&&CL.tx.send(m);
+function renderClient(hadPrompt){const el=$('client');
+ if(!CL.state){
+  if(CL.started){el.innerHTML=`<div class="logo" style="font-family:Lobster;color:#e2479b;font-size:48px;text-align:center;margin:20px 0">Ленаполия</div><div class="box"><p>Игра уже началась без этого телефона. Если ты игрок — открой ссылку с того же телефона, с которого входил(а).</p></div>`;return}
+  const st={connecting:'Подключаемся к столу…',closed:'Связь потерялась, переподключаемся…',nohost:'Стол не найден. Проверь, что на ноутбуке открыта комната '+CL.room,neterr:'Нет связи с сервисом. Проверь интернет.',open:''}[CL.status]||'';
+  const lb=CL.lobby;let name='',tok=null;try{name=localStorage.getItem('lp-name')||'';tok=localStorage.getItem('lp-tok')}catch(e){}
+  const meI=lb?lb.me:-1;const me=meI>=0?lb.players[meI]:null;if(me){name=me.name;tok=me.token}
+  const taken=lb?lb.players.filter((p,i)=>i!==meI).map(p=>p.token):[];if(!tok||taken.includes(tok))tok=TOKENS.find(t=>!taken.includes(t));
+  el.innerHTML=`<div class="logo" style="font-family:Lobster;color:#e2479b;font-size:48px;text-align:center;margin:14px 0">Ленаполия</div>
+  ${st?`<div class="netwarn">${esc(st)}</div>`:''}
+  <div class="box"><h3>${me?'Ты в игре! Можно поменять имя или фишку':'Как тебя зовут?'}</h3><div class="row"><input id="jn" maxlength="14" value="${esc(name)}" placeholder="Имя"></div>
+  <h3>Фишка</h3><div class="tokpick">${TOKENS.map(t=>`<button data-t="${t}" class="${t===tok?'on':''}" ${taken.includes(t)?'disabled':''}>${t}</button>`).join('')}</div>
+  <div class="btns"><button class="btn" id="jgo" ${CL.status!=='open'?'disabled':''}>${me?'Сохранить':'Я в игре!'}</button></div></div>
+  ${lb?`<div class="box"><h3>В комнате</h3>${lb.players.map(p=>`<div class="lob"><span style="font-size:24px">${p.token}</span>${esc(p.name)}</div>`).join('')||'<p>Пока никого</p>'}<p style="font-size:14px;color:#7a3d60">${me?'Ждём, когда на ноутбуке нажмут «Начать игру».':''}</p></div>`:''}`;
+  el.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{el.querySelectorAll('[data-t]').forEach(x=>x.classList.remove('on'));b.classList.add('on')});
+  $('jgo').onclick=()=>{const n=$('jn').value.trim();if(!n){toast('Напиши имя');return}const t=(el.querySelector('[data-t].on')||{}).dataset?.t||tok;try{localStorage.setItem('lp-name',n);localStorage.setItem('lp-tok',t)}catch(e){}csend({t:'join',key:CL.key,name:n,token:t})};
+  return}
+ const m=CL.state,pid=CL.pid,me=S.players[pid],cur=S.players[S.cur],my=pid===S.cur&&S.winner==null;
+ const own=Object.keys(S.props).map(Number).filter(i=>S.props[i].owner===pid);
+ let turn;if(S.winner!=null)turn=`🏆 Победа: ${esc(S.players[S.winner].name)}!`;else if(my)turn='Твой ход!';else turn=`Ходит ${esc(cur.token+' '+cur.name)}`;
+ const ui=m.ui;
+ el.innerHTML=`<div class="box" style="margin-top:8px"><div class="me"><span class="big">${me.token}</span><span class="nmb">${esc(me.name)}${me.out?' (банкрот)':''}</span><span class="money" style="${me.money<0?'color:#c62828':''}">${M(me.money)}</span></div>
+  <div style="font-size:14px;color:#7a3d60;margin-top:4px">📍 ${esc(SP[me.pos].name)}${me.inJail?' — в тюрьме 🔒':''}${me.cards.length?' · 🎫 выход из тюрьмы':''}${me.shields&&me.shields.length?' · 🛡️ отмена штрафа':''}${me.skip?' · ⏸️ пропуск хода':''}</div>
+  <div class="turnbar ${my?'my':''}">${turn}</div><div class="mydice">${dieHTML(S.dice[0])}${dieHTML(S.dice[1])}</div>
+  ${my&&ui?`<div class="status">${ui.status}</div><div class="btns">${ui.btn}</div>`:(my&&busy?'<div class="status">Ходим…</div>':'')}
+ </div>
+ <div class="box"><h3>Моё имущество (${own.length})</h3>${own.length?own.map(i=>{const s=SP[i],pr=S.props[i];return `<div class="prow" data-c="${i}"><span class="sw" style="background:${s.g?G[s.g][0]:'#999'}"></span><span>${s.ic?s.ic+' ':''}${esc(s.name)}</span><span class="r">${pr.mort?'залог':pr.houses===5?'отель':pr.houses?'🏠×'+pr.houses:''}</span></div>`}).join(''):'<p>Пока ничего. Вставай на свободные места и покупай!</p>'}
+  ${my&&!busy?'<div class="btns"><button class="btn sec" id="ctrade">🤝 Обмен</button></div>':''}</div>
+ <div class="box"><h3>Игроки</h3>${S.players.map((q,j)=>`<div class="pl ${j===S.cur?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${esc(q.name)}${j===pid?' (ты)':''}</span><span class="m">${M(q.money)}</span></div>`).join('')}</div>
+ <div class="box"><h3>Что происходит</h3><div class="log">${S.log.slice(0,8).map(x=>`<div>${esc(x)}</div>`).join('')}</div><div class="btns"><button class="btn sec" id="crules">Правила</button></div></div>`;
+ el.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a;
+  if(a==='bankrupt'){modal(`<div class="mh" style="background:#c62828">Банкротство?</div><div class="mb"><p>Ты выбываешь из игры.</p><div class="btns"><button class="btn bad" id="bk">Да</button><button class="btn sec" onclick="closeM()">Отмена</button></div></div>`);$('bk').onclick=()=>{closeM();csend({t:'act',a})};return}
+  if(a==='new')return;csend({t:'act',a})});
+ el.querySelectorAll('[data-c]').forEach(r=>r.onclick=()=>openProp(+r.dataset.c,(a,i)=>{csend({t:'prop',a,i});closeM()}));
+ if($('ctrade'))$('ctrade').onclick=()=>{T={to:null};window.SUBMIT_TRADE=(from,to,g,t,gm,tm)=>csend({t:'trade',to,g,tt:t,gm,tm});drawTrade()};
+ $('crules').onclick=openRules;
+ const pr=m.prompt;
+ if(pr){if(!hadPrompt||hadPrompt!==pr.id){
+  if(pr.kind==='card'){const d=pr.data;modal(`<div class="mh" style="background:${d.kind==='chance'?'#f39321':'#e2479b'}">${d.kind==='chance'?'❓ Шанс':'💬 Сплетни'}</div><div class="mb"><div class="card-t">${esc(d.text)}</div><div class="btns"><button class="btn" id="pa">Ок</button></div></div>`);$('pa').onclick=()=>{closeM();csend({t:'answer',id:pr.id,v:true})}}
+  else if(pr.kind==='shield'){modal(`<div class="mh" style="background:#22a052">🛡️ Отменить штраф?</div><div class="mb"><p>Штраф ${M(pr.data.v)}. У тебя есть карточка отмены штрафа.</p><div class="btns"><button class="btn ok" id="pa">Отменить штраф</button><button class="btn sec" id="pb">Заплатить</button></div></div>`);$('pa').onclick=()=>{closeM();csend({t:'answer',id:pr.id,v:true})};$('pb').onclick=()=>{closeM();csend({t:'answer',id:pr.id,v:false})}}
+  else if(pr.kind==='trade'){const d=pr.data,f=S.players[d.from];modal(`<div class="mh" style="background:#8e44ad">🤝 Обмен от ${esc(f.name)}</div><div class="mb"><p><b>${esc(f.name)}</b> отдаёт: ${esc(d.give)}</p><p><b>Ты</b> отдаёшь: ${esc(d.get)}</p><div class="btns"><button class="btn ok" id="pa">Принять</button><button class="btn bad" id="pb">Отказаться</button></div></div>`);$('pa').onclick=()=>{closeM();csend({t:'answer',id:pr.id,v:true})};$('pb').onclick=()=>{closeM();csend({t:'answer',id:pr.id,v:false})}}
+  $('ovb').dataset.lock=1}}
+ else if(hadPrompt&&$('ovb')&&$('ovb').dataset.lock)closeM();
+}
+/* ---- start ---- */
+if(QS.get('join')){clientStart(QS.get('join').toUpperCase())}
+else{
 try{const raw=localStorage.getItem(SAVE);if(raw){S=JSON.parse(raw);if(S.phase==='moving')S.phase='action'}}catch(e){S=null}
-if(S&&S.players){$('app').style.display='flex';render()}else{S=null;renderSetup()}
+if(S&&S.players){$('app').style.display='flex';render();if(S.net)hostResume()}else{S=null;renderSetup()}
+}
+
 </script>
 </body>
 </html>
