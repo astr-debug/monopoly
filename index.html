@@ -137,45 +137,82 @@ const SP=[
 const PASS=' Если проходишь Старт — получи 200 ленокоинов.';
 const CARDS={
 chance:[
- {x:'Таксист знает короткий путь. Езжай на Старт и получи 200 ленокоинов.',e:'move',to:0},
- {x:'Захотелось к вампирам. Отправляйся в Форкс.',e:'move',to:39},
- {x:'Пятница! Все в Beermarket.'+PASS,e:'move',to:27},
- {x:'Срочно нужен шопинг. Отправляйся в Kostanay Plaza.'+PASS,e:'move',to:18},
- {x:'Вечерняя прогулка. Иди на КЖБИ набережную.'+PASS,e:'move',to:21},
- {x:'Вызываем Яндекс Такси! Иди к ближайшему такси. Если у него есть владелец — заплати ему двойную аренду.',e:'near',k:'taxi'},
- {x:'Спонтанная поездка в Астану.'+PASS,e:'move',to:34},
- {x:'Хочешь курить. Иди к ближайшей клетке IQOS или Одноразки. Если у неё есть владелец — брось кубики и заплати 4× выпавшее. Если владелец владеет обеими карточками, тогда 10×.',e:'near',k:'util'},
- {x:'Нашлись деньги в кармане зимней куртки. Получи 50 ленокоинов.',e:'money',v:50},
- {x:'Остановили на ГАИ без прав. Отправляйся прямо в Тюрьму, Старт не проходишь.',e:'jail'},
- {x:'Выход из тюрьмы бесплатно. Карточку можно оставить себе.',e:'goojf'},
- {x:'Вышли не на той остановке. Вернись на 3 клетки назад.',e:'back'},
- {x:'Ремонт после тусовки: заплати 25 ленокоинов за каждый дом и 100 ленокоинов за каждый отель.',e:'rep',h:25,o:100},
- {x:'Штраф за переход на красный на Майлина. Заплати 15 ленокоинов.',e:'money',v:-15},
- {x:'Тебя выбрали старостой группы. Заплати каждому игроку по 50 ленокоинов.',e:'payEach',v:50},
- {x:'Пришёл кэшбэк. Получи 150 ленокоинов.',e:'money',v:150},
+ {"x": "Таксист знает короткий путь. Езжай на Старт и получи 200 ленокоинов.", "e": "move", "to": 0},
+ {"x": "Захотелось к вампирам. Отправляйся в Форкс.", "e": "move", "to": 39},
+ {"x": "Пятница! Все в Beermarket. Если проходишь Старт — получи 200 ленокоинов.", "e": "move", "to": 27},
+ {"x": "Срочно нужен шопинг. Отправляйся в Kostanay Plaza. Если проходишь Старт — получи 200 ленокоинов.", "e": "move", "to": 18},
+ {"x": "Вечерняя прогулка. Иди на КЖБИ набережную. Если проходишь Старт — получи 200 ленокоинов.", "e": "move", "to": 21},
+ {"x": "Вызываем Яндекс Такси! Иди к ближайшему такси. Если у него есть владелец — заплати ему двойную аренду.", "e": "near", "k": "taxi"},
+ {"x": "Спонтанная поездка в Астану. Если проходишь Старт — получи 200 ленокоинов.", "e": "move", "to": 34},
+ {"x": "Хочешь курить. Иди к ближайшей клетке IQOS или Одноразки. Если у неё есть владелец — брось кубики и заплати 4× выпавшее. Если владелец владеет обеими карточками, тогда 10×.", "e": "near", "k": "util"},
+ {"x": "Нашлись деньги в кармане зимней куртки. Получи 50 ленокоинов.", "e": "money", "v": 50},
+ {"x": "Выход из тюрьмы бесплатно. Карточку можно оставить себе.", "e": "goojf"},
+ {"x": "Вышли не на той остановке. Вернись на 3 клетки назад.", "e": "back"},
+ {"x": "Ремонт после тусовки: заплати 25 ленокоинов за каждый дом и 100 ленокоинов за каждый отель.", "e": "rep", "h": 25, "o": 100},
+ {"x": "Штраф за переход на красный на Майлина. Заплати 15 ленокоинов.", "e": "money", "v": -15},
+ {"x": "Тебя выбрали старостой группы. Заплати каждому игроку по 50 ленокоинов.", "e": "payEach", "v": 50},
+ {"x": "Пришёл кэшбэк. Получи 150 ленокоинов.", "e": "money", "v": 150},
+ {"x": "Экстрасенсы предсказали тебе богатство. Забери 200 ленокоинов из банка.", "e": "money", "v": 200},
+ {"x": "Лена рассмеялась над твоей шуткой. Получи премию 150 ленокоинов.", "e": "money", "v": 150},
+ {"x": "Ты понравился Серику. Он отменяет один твой штраф.", "e": "shield"},
+ {"x": "Септик спасён! Унитаз сегодня на твоей стороне. Получи 150 ленокоинов.", "e": "money", "v": 150},
+ {"x": "Ключ к успеху! Ты смог достать застрявший ключ. Получи 200 ленокоинов.", "e": "money", "v": 200},
+ {"x": "Лена найдена! Ты искал её по всему дому, но она мирно спала в туалете. Получи 200 ленокоинов за успешные поиски.", "e": "money", "v": 200},
+ {"x": "Зелёный забор! Ты прошёл через него и избежал неприятностей. Получи 200 ленокоинов.", "e": "money", "v": 200},
+ {"x": "Соседка сфотографировала твои цветы и объявила их своими. Лена вступилась за тебя. Получи 200 ленокоинов.", "e": "money", "v": 200},
+ {"x": "Калитка открыта! Ты можешь свободно передвигаться. Сделай дополнительный ход.", "e": "extra"},
+ {"x": "Бей об погост! Ты прошёл мистическое испытание. Получи 200 ленокоинов.", "e": "money", "v": 200},
+ {"x": "Эдвард ждёт тебя. Отправляйся в Форкс.", "e": "move", "to": 39},
+ {"x": "Серик всё слышал! Ты сказал лишнее слово. Заплати ему 100 ленокоинов.", "e": "money", "v": -100},
+ {"x": "Ты потерял связь с Фортуной. Пропусти один ход.", "e": "skip"},
+ {"x": "Серик уверен, что вы накручиваете свет. Заплати 200 ленокоинов за электричество.", "e": "money", "v": -200},
+ {"x": "Серик услышал слово «унитаз». Он уже подозревает неладное. Заплати 150 ленокоинов.", "e": "money", "v": -150},
+ {"x": "СОСЕДКА ОБНАРУЖИЛА ГЛИСТЫ! Она требует медицинского обследования. Заплати 150 ленокоинов.", "e": "money", "v": -150},
+ {"x": "В унитаз снова попала посторонняя вещь. Заплати 300 ленокоинов за чистку септика.", "e": "money", "v": -300},
+ {"x": "Такси не приехало с сиренью. Заплати 150 ленокоинов за несостоявшуюся доставку.", "e": "money", "v": -150},
+ {"x": "Серик поднял цену за чердак над гаражом. Заплати 50 ленокоинов.", "e": "money", "v": -50}
 ],
 chest:[
- {x:'Таксист Альбины подвез до дома. Иди на Старт и получи 200 ленокоинов.',e:'move',to:0},
- {x:'Банк ошибся в твою пользу. Получи 200 ленокоинов.',e:'money',v:200},
- {x:'Маникюр сам себя не сделает. Заплати 50 ленокоинов.',e:'money',v:-50},
- {x:'Старые вещи ушли на OLX. Получи 50 ленокоинов.',e:'money',v:50},
- {x:'Выход из тюрьмы бесплатно. Карточку можно оставить себе.',e:'goojf'},
- {x:'Слишком громко сплетничали и Серик ругается. Отправляйся прямо в Тюрьму, Старт не проходишь.',e:'jail'},
- {x:'День рождения! Каждый игрок дарит тебе по 10 ленокоинов.',e:'collect',v:10},
- {x:'Вернули долг, про который все давно забыли. Получи 100 ленокоинов.',e:'money',v:100},
- {x:'Пересдача в КИнЭУ. Заплати 100 ленокоинов.',e:'money',v:-100},
- {x:'Мама из Качара привезла еды. Получи 100 ленокоинов.',e:'money',v:100},
- {x:'Доставка еды в 3 часа ночи. Заплати 50 ленокоинов.',e:'money',v:-50},
- {x:'Пост набрал кучу лайков, пришла реклама. Получи 10 ленокоинов.',e:'money',v:10},
- {x:'Премия на работе. Получи 25 ленокоинов.',e:'money',v:25},
- {x:'Генеральная уборка: заплати 40 ленокоинов за каждый дом и 115 ленокоинов за каждый отель.',e:'rep',h:40,o:115},
- {x:'Нашлась скидка в Dodo. Получи 20 ленокоинов.',e:'money',v:20},
- {x:'Закончились конфеты «Баян Сулу». Купи ещё: заплати 20 ленокоинов.',e:'money',v:-20},
+ {"x": "Таксист Альбины подвез до дома. Иди на Старт и получи 200 ленокоинов.", "e": "move", "to": 0},
+ {"x": "Банк ошибся в твою пользу. Получи 200 ленокоинов.", "e": "money", "v": 200},
+ {"x": "Маникюр сам себя не сделает. Заплати 50 ленокоинов.", "e": "money", "v": -50},
+ {"x": "Выход из тюрьмы бесплатно. Карточку можно оставить себе.", "e": "goojf"},
+ {"x": "Слишком громко сплетничали и Серик ругается. Отправляйся прямо в Тюрьму, Старт не проходишь.", "e": "jail"},
+ {"x": "День рождения! Каждый игрок дарит тебе по 10 ленокоинов.", "e": "collect", "v": 10},
+ {"x": "Вернули долг, про который все давно забыли. Получи 100 ленокоинов.", "e": "money", "v": 100},
+ {"x": "Пересдача в КИнЭУ. Заплати 100 ленокоинов.", "e": "money", "v": -100},
+ {"x": "Мама из Качара привезла еды. Получи 100 ленокоинов.", "e": "money", "v": 100},
+ {"x": "Доставка еды в 3 часа ночи. Заплати 50 ленокоинов.", "e": "money", "v": -50},
+ {"x": "Премия на работе. Получи 25 ленокоинов.", "e": "money", "v": 25},
+ {"x": "Генеральная уборка: заплати 40 ленокоинов за каждый дом и 115 ленокоинов за каждый отель.", "e": "rep", "h": 40, "o": 115},
+ {"x": "Нашлась скидка в Dodo. Получи 20 ленокоинов.", "e": "money", "v": 20},
+ {"x": "Закончились конфеты «Баян Сулу». Купи ещё: заплати 20 ленокоинов.", "e": "money", "v": -20},
+ {"x": "Ты угадал, о чём думает Лена. Получи 150 ленокоинов.", "e": "money", "v": 150},
+ {"x": "Серик сегодня не подслушивал. Ты избежал штрафа. Получи 100 ленокоинов.", "e": "money", "v": 100},
+ {"x": "Тебе выпала карта особой удачи. Банк выплачивает тебе 300 ленокоинов.", "e": "money", "v": 300},
+ {"x": "Малиновая водка! Ты выпил загадочный напиток и выжил. Получи 200 ленокоинов за стойкость.", "e": "money", "v": 200},
+ {"x": "Серик забыл про перегоревшую лампочку. Ты сэкономил на освещении. Получи 100 ленокоинов.", "e": "money", "v": 100},
+ {"x": "Серик снова обвинил вас в накручивании света, но доказательств нет. Штраф отменён!", "e": "shield"},
+ {"x": "Олег, позовите Олега! Олег наконец-то пришёл. Получи 150 ленокоинов.", "e": "money", "v": 150},
+ {"x": "Соседка решила, что у тебя глисты, но ошиблась. Получи компенсацию 100 ленокоинов.", "e": "money", "v": 100},
+ {"x": "Солдат наконец-то привёз сирень! Получи 200 ленокоинов.", "e": "money", "v": 200},
+ {"x": "Серик сегодня не обнаружил поломок. Получи 150 ленокоинов.", "e": "money", "v": 150},
+ {"x": "Ты пережил концерт Насти. Получи компенсацию 150 ленокоинов.", "e": "money", "v": 150},
+ {"x": "Время отдохнуть. Иди на ту самую Лавочку.", "e": "move", "to": 20},
+ {"x": "Серик обнаружил подозрительную активность. Заплати штраф 200 ленокоинов.", "e": "money", "v": -200},
+ {"x": "ТЬМА НА КУХНЕ. Лампочка всё ещё не работает. Заплати 100 ленокоинов за моральный ущерб.", "e": "money", "v": -100},
+ {"x": "Ты решил самостоятельно поменять лампочку, но не справился. Заплати 100 ленокоинов Серику за вызов мастера.", "e": "money", "v": -100},
+ {"x": "За каждый лишний звук в квартире Серик выставляет счёт. Заплати 100 ленокоинов.", "e": "money", "v": -100},
+ {"x": "В доме снова что-то сломалось. Серик выставил счёт. Заплати 200 ленокоинов.", "e": "money", "v": -200},
+ {"x": "КАЛИТКА ЗАМЁРЗЛА! Чтобы попасть домой, пропусти ход.", "e": "skip"},
+ {"x": "Александр Шепс не смог тебя спасти. Пропусти ход.", "e": "skip"},
+ {"x": "Ты прошёл проверку экстрасенсов. Тебе открылись тайны будущего. Получи 200 ленокоинов.", "e": "money", "v": 200}
 ]};
+
 const COLORS=['#e2479b','#2350a8','#22a052','#f39321','#8e44ad','#e03b3b','#16a5a5','#6d4c41'];
 const TOKENS=['💅','🦊','🐱','☕','👑','🌸','🐻','🍕','🚗','🎧','🍓','🦄','⭐','🐸','🍩','🎀','🐶','🧛','🍎'];
 const M=n=>`${n} ЛК`;
-const SAVE='lenapoly-v1';
+const SAVE='lenapoly-v2';
 let S=null,busy=false,T=null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -207,9 +244,9 @@ function renderSetup(){
 }
 function readSetup(){$('setup').querySelectorAll('[data-nm]').forEach(e=>setupData[+e.dataset.nm].name=e.value.trim()||('Игрок '+(+e.dataset.nm+1)));$('setup').querySelectorAll('[data-tk]').forEach(e=>setupData[+e.dataset.tk].token=e.value)}
 function newGame(list){
- S={players:list.map((p,i)=>({name:p.name,token:p.token,color:COLORS[i],money:1500,pos:0,inJail:false,jailTurns:0,cards:[],out:false,creditor:null})),
+ S={players:list.map((p,i)=>({name:p.name,token:p.token,color:COLORS[i],money:1500,pos:0,inJail:false,jailTurns:0,cards:[],shields:[],skip:0,out:false,creditor:null})),
   props:{},cur:0,phase:'roll',dbl:0,dice:[3,4],canAgain:false,pendingBuy:null,log:[],winner:null,
-  decks:{chance:shuffle([...Array(16).keys()]),chest:shuffle([...Array(16).keys()])}};
+  decks:{chance:shuffle([...CARDS.chance.keys()]),chest:shuffle([...CARDS.chest.keys()])},extra:false};
  SP.forEach((s,i)=>{if(s.price)S.props[i]={owner:null,houses:0,mort:false}});
  log(`Игра началась! Первым ходит ${S.players[0].name}.`);
  $('setup').style.display='none';$('app').style.display='flex';save();render();
@@ -234,28 +271,33 @@ async function land(sum,opt={}){const p=P(),i=p.pos,s=SP[i];
   else if(pr.owner!==S.cur){if(pr.mort)log(`«${s.name}» в залоге — аренды нет`);
    else{const r=rentOf(i,sum,opt);pay(S.cur,r,pr.owner);log(`${p.name} платит ${S.players[pr.owner].name} ${M(r)} за «${s.name}»`)}}
   return}
- if(s.t==='tax'){pay(S.cur,s.amt,null);log(`${s.name}: ${p.name} платит ${M(s.amt)}`)}
+ if(s.t==='tax'){log(`${s.name}: ${M(s.amt)}`);await fine(s.amt)}
  else if(s.t==='chance'||s.t==='chest')await drawCard(s.t);
  else if(s.t==='gotojail')sendToJail(S.cur);
 }
 async function drawCard(kind){const id=S.decks[kind].shift(),c=CARDS[kind][id];
- render();await showCard(kind,c.x);if(c.e!=='goojf')S.decks[kind].push(id);
+ render();await showCard(kind,c.x);if(c.e!=='goojf'&&c.e!=='shield')S.decks[kind].push(id);
  const p=P();log(`${kind==='chance'?'Шанс':'Сплетни'}: ${c.x}`);
  switch(c.e){
-  case 'money':if(c.v>0)p.money+=c.v;else pay(S.cur,-c.v,null);break;
+  case 'money':if(c.v>0)p.money+=c.v;else await fine(-c.v);break;
   case 'move':await moveTo(c.to);await land(S.dice[0]+S.dice[1]);break;
   case 'near':{let t=p.pos;do{t=(t+1)%40}while(SP[t].t!==c.k);await moveTo(t);
    if(c.k==='util'){const pr=S.props[t];if(pr.owner!==null&&pr.owner!==S.cur&&!pr.mort){const a=r6(),b=r6();S.dice=[a,b];log(`Бросок для аренды: ${a}+${b}`);render();await sleep(400);await land(a+b)}else await land(0)}
    else await land(0,{double:true});break}
   case 'jail':sendToJail(S.cur);break;
   case 'goojf':p.cards.push(kind);break;
+  case 'shield':p.shields.push([kind,id]);log(`${p.name} получает карточку отмены штрафа`);break;
+  case 'skip':p.skip=(p.skip||0)+1;log(`${p.name} пропустит следующий ход`);break;
+  case 'extra':S.extra=true;log(`${p.name} получает дополнительный ход`);break;
   case 'back':p.pos=(p.pos+37)%40;render();await sleep(200);await land(S.dice[0]+S.dice[1]);break;
-  case 'rep':{let h=0,o=0;Object.values(S.props).forEach(pr=>{if(pr.owner===S.cur){if(pr.houses===5)o++;else h+=pr.houses}});const v=h*c.h+o*c.o;if(v)pay(S.cur,v,null);log(`${p.name} платит ${M(v)} за ремонт`);break}
+  case 'rep':{let h=0,o=0;Object.values(S.props).forEach(pr=>{if(pr.owner===S.cur){if(pr.houses===5)o++;else h+=pr.houses}});const v=h*c.h+o*c.o;log(`Ремонт: ${M(v)}`);if(v)await fine(v);break}
   case 'payEach':S.players.forEach((q,j)=>{if(j!==S.cur&&!q.out)pay(S.cur,c.v,j)});break;
   case 'collect':S.players.forEach((q,j)=>{if(j!==S.cur&&!q.out)pay(j,c.v,S.cur)});break;
  }
 }
 
+async function fine(v){const p=P();if(p.shields&&p.shields.length){const use=await askShield(v);if(use){const [k,id]=p.shields.pop();S.decks[k].push(id);log(`${p.name} отменяет штраф ${M(v)} карточкой 🛡️`);return}}pay(S.cur,v,null)}
+function askShield(v){return new Promise(res=>{modal(`<div class="mh" style="background:#22a052">🛡️ Отменить штраф?</div><div class="mb"><p>Штраф ${M(v)}. У тебя есть карточка отмены штрафа.</p><div class="btns"><button class="btn ok" id="sy">Отменить штраф</button><button class="btn sec" id="sn">Заплатить</button></div></div>`);$('ovb').dataset.lock=1;$('sy').onclick=()=>{closeM();res(true)};$('sn').onclick=()=>{closeM();res(false)}})}
 /* ---------- turn actions ---------- */
 async function roll(){if(busy||S.phase!=='roll'||S.pendingBuy!=null)return;const p=P();if(p.money<0){toast('Сначала погаси долг');return}
  busy=true;const a=r6(),b=r6(),d=a===b;S.dice=[a,b];render();await sleep(300);
@@ -263,10 +305,10 @@ async function roll(){if(busy||S.phase!=='roll'||S.pendingBuy!=null)return;const
  if(p.inJail){
   if(d){p.inJail=false;p.jailTurns=0;log(`Дубль — ${p.name} выходит из тюрьмы`);S.phase='moving';await stepMove(a+b);await land(a+b)}
   else{p.jailTurns++;if(p.jailTurns>=3){pay(S.cur,50,null);p.inJail=false;p.jailTurns=0;log(`Третья попытка — ${p.name} платит 50 ЛК и выходит`);S.phase='moving';await stepMove(a+b);await land(a+b)}else log(`Не дубль, ${p.name} остаётся в тюрьме`)}
-  S.canAgain=false;S.phase='action';busy=false;save();render();return}
+  S.canAgain=false;if(S.extra){S.extra=false;if(!P().inJail)S.canAgain=true}S.phase='action';busy=false;save();render();return}
  if(d){S.dbl++;if(S.dbl===3){log('Три дубля подряд — это подозрительно!');sendToJail(S.cur);S.phase='action';busy=false;save();render();return}}
  S.canAgain=d;S.phase='moving';await stepMove(a+b);await land(a+b);
- if(P().inJail)S.canAgain=false;S.phase='action';busy=false;save();render();
+ if(S.extra){S.extra=false;S.canAgain=true}if(P().inJail)S.canAgain=false;S.phase='action';busy=false;save();render();
 }
 function rollAgain(){if(busy)return;S.phase='roll';S.canAgain=false;roll()}
 function payJail(){const p=P();if(p.money<50)return;pay(S.cur,50,null);p.inJail=false;p.jailTurns=0;log(`${p.name} платит 50 ЛК и выходит из тюрьмы`);save();render()}
@@ -275,13 +317,13 @@ function buy(){const i=S.pendingBuy,p=P(),s=SP[i];if(i==null||p.money<s.price)re
 function decline(){const s=SP[S.pendingBuy];S.pendingBuy=null;log(`${P().name} не покупает «${s.name}»`);save();render()}
 function endTurn(){if(busy||S.pendingBuy!=null)return;if(P().money<0){toast('Сначала погаси долг');return}
  S.dbl=0;S.canAgain=false;nextPlayer();save();render()}
-function nextPlayer(){let n=S.cur;do{n=(n+1)%S.players.length}while(S.players[n].out);S.cur=n;S.phase='roll';S.dbl=0;S.canAgain=false;S.pendingBuy=null;
+function nextPlayer(){let n=S.cur;for(;;){n=(n+1)%S.players.length;const q=S.players[n];if(q.out)continue;if(q.skip>0){q.skip--;log(`${q.name} пропускает ход`);continue}break}S.cur=n;S.phase='roll';S.dbl=0;S.canAgain=false;S.pendingBuy=null;
  const p=P();log(`Ход: ${p.name}${p.inJail?' (в тюрьме)':''}`)}
 function bankrupt(){const pi=S.cur,p=P();if(p.money>=0)return;const cr=p.creditor;
  Object.keys(S.props).forEach(k=>{const pr=S.props[k];if(pr.owner===pi){p.money+=pr.houses*G[SP[k].g]?.[1]/2||0;pr.houses=0;
   if(cr!=null&&!S.players[cr].out)pr.owner=cr;else{pr.owner=null;pr.mort=false}}});
  if(cr!=null&&!S.players[cr].out&&p.money<0)S.players[cr].money+=p.money;
- p.cards.forEach(k=>S.decks[k].push(CARDS[k].findIndex(c=>c.e==='goojf')));p.cards=[];
+ p.cards.forEach(k=>S.decks[k].push(CARDS[k].findIndex(c=>c.e==='goojf')));p.cards=[];(p.shields||[]).forEach(([k,id])=>S.decks[k].push(id));p.shields=[];
  p.out=true;p.money=0;log(`💥 ${p.name} — банкрот${cr!=null?', всё имущество уходит к '+S.players[cr].name:''}`);
  const act=S.players.filter(q=>!q.out);if(act.length===1){S.winner=S.players.indexOf(act[0]);log(`🏆 ${act[0].name} побеждает!`);save();render();return}
  nextPlayer();save();render()}
@@ -345,6 +387,7 @@ function openRules(){modal(`<div class="mh" style="background:#e2479b">Прав�
 <p><b>Такси</b>: чем больше их у тебя, тем дороже аренда. <b>IQOS и Одноразки</b>: аренда зависит от кубиков.</p>
 <p><b>Нет денег</b> — продавай дома и закладывай места (нажми на клетку). Не помогло — банкротство.</p>
 <p><b>Обмен</b> — меняйся местами и деньгами с другими игроками.</p>
+<p><b>Особые карточки:</b> 🛡️ отмена штрафа — держи у себя и используй, когда придётся платить штраф с карточки или налог; ⏸️ пропуск хода; дополнительный ход — после хода бросаешь ещё раз.</p>
 <p>Нажми на любую клетку, чтобы посмотреть её карточку.</p>
 <div class="btns"><button class="btn sec" onclick="closeM()">Понятно</button></div></div>`)}
 function askNew(){modal(`<div class="mh" style="background:#c62828">Новая игра?</div><div class="mb"><p>Текущая партия удалится.</p><div class="btns"><button class="btn bad" id="nyes">Да, заново</button><button class="btn sec" onclick="closeM()">Отмена</button></div></div>`);
@@ -375,7 +418,7 @@ function render(){if(!S)return;const p=P();
  else if(S.phase==='roll'){if(p.inJail){status=`В тюрьме (попытка ${p.jailTurns+1} из 3).`;btn=`<button class="btn" data-a="roll">Бросить на дубль</button><button class="btn sec" data-a="payjail" ${p.money<50?'disabled':''}>Заплатить 50 ЛК</button>${p.cards.length?'<button class="btn ok" data-a="card">Карточка выхода</button>':''}`}else{btn=`<button class="btn" data-a="roll">🎲 Бросить кубики</button>`}}
  else if(S.phase==='action'){if(S.canAgain){status='Дубль! Ходи ещё раз.';btn=`<button class="btn" data-a="again">🎲 Бросить ещё раз</button>`}else btn=`<button class="btn" data-a="end">Закончить ход</button>`}
  let pl=S.players.map((q,j)=>{const own=Object.keys(S.props).filter(k=>S.props[k].owner===j);
-  return `<div class="pl ${j===S.cur&&S.winner==null?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${esc(q.name)}${q.inJail?' 🔒':''}${q.cards.length?' 🎫':''}</span><span class="m" style="${q.money<0?'color:#c62828':''}">${M(q.money)}</span></div>${own.length?`<div class="chips">${own.map(k=>`<button class="chip" data-c="${k}" style="background:${SP[k].g?G[SP[k].g][0]:'#777'};${S.props[k].mort?'opacity:.45;':''}${SP[k].g==='yellow'||SP[k].g==='lb'?'color:#2a2230':''}">${esc(SP[k].name)}${S.props[k].houses?' '+(S.props[k].houses===5?'🏨':'🏠'+S.props[k].houses):''}</button>`).join('')}</div>`:''}`}).join('');
+  return `<div class="pl ${j===S.cur&&S.winner==null?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${esc(q.name)}${q.inJail?' 🔒':''}${q.cards.length?' 🎫':''}${q.shields&&q.shields.length?' 🛡️':''}${q.skip?' ⏸️':''}</span><span class="m" style="${q.money<0?'color:#c62828':''}">${M(q.money)}</span></div>${own.length?`<div class="chips">${own.map(k=>`<button class="chip" data-c="${k}" style="background:${SP[k].g?G[SP[k].g][0]:'#777'};${S.props[k].mort?'opacity:.45;':''}${SP[k].g==='yellow'||SP[k].g==='lb'?'color:#2a2230':''}">${esc(SP[k].name)}${S.props[k].houses?' '+(S.props[k].houses===5?'🏨':'🏠'+S.props[k].houses):''}</button>`).join('')}</div>`:''}`}).join('');
  $('panel').innerHTML=`<div class="box"><div class="cur"><span class="big">${p.token}</span><span class="nmb">${esc(p.name)}</span><span class="money">${M(p.money)}</span></div><div class="status">${status}</div><div class="btns">${btn}</div></div>
  <div class="box"><h3>Игроки</h3>${pl}<div class="btns"><button class="btn sec" data-a="trade">🤝 Обмен</button><button class="btn sec" data-a="rules">Правила</button><button class="btn sec" data-a="new">Новая игра</button></div></div>
  <div class="box"><h3>Что происходит</h3><div class="log">${S.log.map(m=>`<div>${esc(m)}</div>`).join('')}</div></div>`;
