@@ -104,7 +104,7 @@ const st=(name,price,g,rent)=>({t:'street',name,price,g,rent});
 const TAXI={t:'taxi',name:'Яндекс Такси',price:200,ic:'🚕'};
 const CH={t:'chance',name:'Шанс',ic:'❓'}, CS={t:'chest',name:'Сплетни',ic:'💬'};
 const SP=[
- {t:'go',name:'Старт',sub:'получи 200 ЛК',ic:'➡️'},
+ {t:'go',name:'Старт',sub:'получи 200 Ł',ic:'➡️'},
  st('ГАИ',60,'brown',[2,10,30,90,160,250]),
  CS,
  st('1-я Челябинская',60,'brown',[4,20,60,180,320,450]),
@@ -134,7 +134,7 @@ const SP=[
  st('Beermarket',260,'yellow',[22,110,330,800,975,1150]),
  {t:'util',name:'Одноразки',price:150,ic:'🔋'},
  st('Баден-Баден',280,'yellow',[24,120,360,850,1025,1200]),
- {t:'gotojail',name:'В тюрьму!',sub:'без 200 ЛК',ic:'👮'},
+ {t:'gotojail',name:'В тюрьму!',sub:'без 200 Ł',ic:'👮'},
  st('Качар',300,'green',[26,130,390,900,1100,1275]),
  st('Актобэ',300,'green',[26,130,390,900,1100,1275]),
  CS,
@@ -222,7 +222,7 @@ chest:[
 
 const COLORS=['#e2479b','#2350a8','#22a052','#f39321','#8e44ad','#e03b3b','#16a5a5','#6d4c41'];
 const TOKENS=['💅','🦊','🐱','☕','👑','🌸','🐻','🍕','🚗','🎧','🍓','🦄','⭐','🐸','🍩','🎀','🐶','🧛','🍎'];
-const M=n=>`${n} ЛК`;
+const M=n=>`${n} Ł`;
 const SAVE='lenapoly-v2';
 let S=null,busy=false,T=null;
 const $=id=>document.getElementById(id);
@@ -267,7 +267,7 @@ function newGame(list){
 function pay(pi,amt,to){S.players[pi].money-=amt;if(to!=null)S.players[to].money+=amt;if(S.players[pi].money<0)S.players[pi].creditor=(to==null?null:to)}
 
 /* ---------- movement ---------- */
-async function stepMove(n){const p=P();for(let k=0;k<n;k++){p.pos=(p.pos+1)%40;if(p.pos===0){p.money+=200;log(`${p.name} проходит Старт: +200 ЛК`)}render();await sleep(130)}}
+async function stepMove(n){const p=P();for(let k=0;k<n;k++){p.pos=(p.pos+1)%40;if(p.pos===0){p.money+=200;log(`${p.name} проходит Старт: +200 Ł`)}render();await sleep(130)}}
 async function moveTo(t){await stepMove((t-P().pos+40)%40)}
 function sendToJail(pi){const p=S.players[pi];p.pos=10;p.inJail=true;p.jailTurns=0;S.canAgain=false;S.dbl=0;log(`${p.name} отправляется в Тюрьму 🔒`)}
 
@@ -315,14 +315,14 @@ async function roll(){if(busy||S.phase!=='roll'||S.pendingBuy!=null)return;const
  log(`${p.name} бросает ${a}+${b}${d?' — дубль!':''}`);
  if(p.inJail){
   if(d){p.inJail=false;p.jailTurns=0;log(`Дубль — ${p.name} выходит из тюрьмы`);S.phase='moving';await stepMove(a+b);await land(a+b)}
-  else{p.jailTurns++;if(p.jailTurns>=3){pay(S.cur,50,null);p.inJail=false;p.jailTurns=0;log(`Третья попытка — ${p.name} платит 50 ЛК и выходит`);S.phase='moving';await stepMove(a+b);await land(a+b)}else log(`Не дубль, ${p.name} остаётся в тюрьме`)}
+  else{p.jailTurns++;if(p.jailTurns>=3){pay(S.cur,50,null);p.inJail=false;p.jailTurns=0;log(`Третья попытка — ${p.name} платит 50 Ł и выходит`);S.phase='moving';await stepMove(a+b);await land(a+b)}else log(`Не дубль, ${p.name} остаётся в тюрьме`)}
   S.canAgain=false;if(S.extra){S.extra=false;if(!P().inJail)S.canAgain=true}S.phase='action';busy=false;save();render();return}
  if(d){S.dbl++;if(S.dbl===3){log('Три дубля подряд — это подозрительно!');sendToJail(S.cur);S.phase='action';busy=false;save();render();return}}
  S.canAgain=d;S.phase='moving';await stepMove(a+b);await land(a+b);
  if(S.extra){S.extra=false;S.canAgain=true}if(P().inJail)S.canAgain=false;S.phase='action';busy=false;save();render();
 }
 function rollAgain(){if(busy)return;S.phase='roll';S.canAgain=false;roll()}
-function payJail(){const p=P();if(p.money<50)return;pay(S.cur,50,null);p.inJail=false;p.jailTurns=0;log(`${p.name} платит 50 ЛК и выходит из тюрьмы`);save();render()}
+function payJail(){const p=P();if(p.money<50)return;pay(S.cur,50,null);p.inJail=false;p.jailTurns=0;log(`${p.name} платит 50 Ł и выходит из тюрьмы`);save();render()}
 function useCard(){const p=P();const k=p.cards.pop();if(!k)return;S.decks[k].push(CARDS[k].findIndex(c=>c.e==='goojf'));p.inJail=false;p.jailTurns=0;log(`${p.name} использует карточку «Выход из тюрьмы»`);save();render()}
 function buy(){const i=S.pendingBuy,p=P(),s=SP[i];if(i==null||p.money<s.price)return;pay(S.cur,s.price,null);S.props[i].owner=S.cur;S.pendingBuy=null;log(`${p.name} покупает «${s.name}» за ${M(s.price)}`);save();render()}
 function decline(){const s=SP[S.pendingBuy];S.pendingBuy=null;log(`${P().name} не покупает «${s.name}»`);save();render()}
@@ -365,8 +365,8 @@ function openProp(i){const s=SP[i];
  if(!s.price){let t=INFO[s.t]||'';if(s.t==='tax')t=`Заплати банку ${M(s.amt)}.`;modal(`<div class="mh" style="background:#9a4f78">${s.ic} ${esc(s.name)}</div><div class="mb">${t}<div class="btns"><button class="btn sec" onclick="closeM()">Закрыть</button></div></div>`);return}
  const pr=S.props[i],own=pr.owner!=null?S.players[pr.owner]:null;let body='',col='#555';
  if(s.t==='street'){col=G[s.g][0];const r=s.rent;body=`<table><tr><td>Аренда</td><td>${M(r[0])}</td></tr><tr><td>Вся группа, без домов</td><td>${M(r[0]*2)}</td></tr>${[1,2,3,4].map(n=>`<tr><td>С ${n} ${n===1?'домом':'домами'}</td><td>${M(r[n])}</td></tr>`).join('')}<tr><td>С отелем</td><td>${M(r[5])}</td></tr></table><p>Дом стоит ${M(G[s.g][1])}, отель — ${M(G[s.g][1])} и 4 дома.<br>Залог: ${M(s.price/2)}</p>`}
- else if(s.t==='taxi'){col='#f5d327';body=`<table><tr><td>1 такси</td><td>25 ЛК</td></tr><tr><td>2 такси</td><td>50 ЛК</td></tr><tr><td>3 такси</td><td>100 ЛК</td></tr><tr><td>4 такси</td><td>200 ЛК</td></tr></table><p>Залог: 100 ЛК</p>`}
- else{col='#7a7a7a';body=`<p>Одна из двух — аренда 4× сумма на кубиках.<br>Обе — 10× сумма на кубиках.</p><p>Залог: 75 ЛК</p>`}
+ else if(s.t==='taxi'){col='#f5d327';body=`<table><tr><td>1 такси</td><td>25 Ł</td></tr><tr><td>2 такси</td><td>50 Ł</td></tr><tr><td>3 такси</td><td>100 Ł</td></tr><tr><td>4 такси</td><td>200 Ł</td></tr></table><p>Залог: 100 Ł</p>`}
+ else{col='#7a7a7a';body=`<p>Одна из двух — аренда 4× сумма на кубиках.<br>Обе — 10× сумма на кубиках.</p><p>Залог: 75 Ł</p>`}
  let st2=`<p><b>Цена:</b> ${M(s.price)}<br><b>Владелец:</b> ${own?esc(own.token+' '+own.name):'банк'}${pr.mort?' <b>(в залоге)</b>':''}${s.t==='street'&&pr.houses?`<br><b>Построено:</b> ${pr.houses===5?'отель':pr.houses+' дом.'}`:''}</p>`;
  let b='';if(pr.owner===S.cur&&!busy&&S.winner==null){
   if(s.t==='street')b+=`<button class="btn ok" ${canBuild(i)?'':'disabled'} data-pa="build">Построить${pr.houses===4?' отель':' дом'} −${M(hcost(i))}</button><button class="btn sec" ${canSell(i)?'':'disabled'} data-pa="sell">Продать постройку +${M(hcost(i)/2)}</button>`;
@@ -433,7 +433,7 @@ function render(){if(!S)return;const p=P();
  else if(busy){status='Ходим…'}
  else if(S.pendingBuy!=null){const s=SP[S.pendingBuy];status=`«${esc(s.name)}» никому не принадлежит.`;btn=`<button class="btn ok" data-a="buy" ${p.money<s.price?'disabled':''}>Купить за ${M(s.price)}</button><button class="btn sec" data-a="decline">Не покупать</button>`}
  else if(p.money<0){status=`Долг ${M(-p.money)}. Продай дома или заложи места — нажми на свои клетки. Или объяви банкротство.`;btn=`<button class="btn bad" data-a="bankrupt">Объявить банкротство</button>`}
- else if(S.phase==='roll'){if(p.inJail){status=`В тюрьме (попытка ${p.jailTurns+1} из 3).`;btn=`<button class="btn" data-a="roll">Бросить на дубль</button><button class="btn sec" data-a="payjail" ${p.money<50?'disabled':''}>Заплатить 50 ЛК</button>${p.cards.length?'<button class="btn ok" data-a="card">Карточка выхода</button>':''}`}else{btn=`<button class="btn" data-a="roll">🎲 Бросить кубики</button>`}}
+ else if(S.phase==='roll'){if(p.inJail){status=`В тюрьме (попытка ${p.jailTurns+1} из 3).`;btn=`<button class="btn" data-a="roll">Бросить на дубль</button><button class="btn sec" data-a="payjail" ${p.money<50?'disabled':''}>Заплатить 50 Ł</button>${p.cards.length?'<button class="btn ok" data-a="card">Карточка выхода</button>':''}`}else{btn=`<button class="btn" data-a="roll">🎲 Бросить кубики</button>`}}
  else if(S.phase==='action'){if(S.canAgain){status='Дубль! Ходи ещё раз.';btn=`<button class="btn" data-a="again">🎲 Бросить ещё раз</button>`}else btn=`<button class="btn" data-a="end">Закончить ход</button>`}
  let pl=S.players.map((q,j)=>{const own=Object.keys(S.props).filter(k=>S.props[k].owner===j);
   return `<div class="pl ${j===S.cur&&S.winner==null?'on':''} ${q.out?'out':''}" style="border-color:${q.color}"><span style="font-size:20px">${q.token}</span><span>${esc(q.name)}${q.inJail?' 🔒':''}${q.cards.length?' 🎫':''}${q.shields&&q.shields.length?' 🛡️':''}${q.skip?' ⏸️':''}</span><span class="m" style="${q.money<0?'color:#c62828':''}">${M(q.money)}</span></div>${own.length?`<div class="chips">${own.map(k=>`<button class="chip" data-c="${k}" style="background:${SP[k].g?G[SP[k].g][0]:'#777'};${S.props[k].mort?'opacity:.45;':''}${SP[k].g==='yellow'||SP[k].g==='lb'?'color:#2a2230':''}">${esc(SP[k].name)}${S.props[k].houses?' '+(S.props[k].houses===5?'🏨':'🏠'+S.props[k].houses):''}</button>`).join('')}</div>`:''}`}).join('');
