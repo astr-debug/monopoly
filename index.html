@@ -21,7 +21,7 @@ button{font-family:inherit}
 .cell.l .bar,.cell.r .bar{flex-direction:column;letter-spacing:0;line-height:1}
 .txt{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;padding:2px 1px;overflow-wrap:break-word;hyphens:auto}
 .cell.l .txt,.cell.r .txt{justify-content:center;gap:2px}
-.nm{font-weight:500}
+.nm{font-weight:500;width:100%;overflow-wrap:anywhere}
 .pr{font-weight:700;color:#555}
 .ic2{font-size:calc(var(--W)/40)}
 .cn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2px;background:#fff4f9}
@@ -123,7 +123,7 @@ const SP=[
  st('Beermarket',260,'yellow',[22,110,330,800,975,1150]),
  {t:'util',name:'Одноразки',price:150,ic:'🔋'},
  st('Баден-Баден',280,'yellow',[24,120,360,850,1025,1200]),
- {t:'gotojail',name:'В тюрьму!',sub:'без 00',ic:'👮'},
+ {t:'gotojail',name:'В тюрьму!',sub:'без $200',ic:'👮'},
  st('Качар',300,'green',[26,130,390,900,1100,1275]),
  st('Актобэ',300,'green',[26,130,390,900,1100,1275]),
  CS,
@@ -353,11 +353,12 @@ function askNew(){modal(`<div class="mh" style="background:#c62828">Новая �
 const PIPS={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
 const dieHTML=n=>`<div class="die">${[1,2,3,4,5,6,7,8,9].map(k=>PIPS[n].includes(k)?'<div class="pip"></div>':'<div></div>').join('')}</div>`;
 function gp(i){if(i<=10)return[11,11-i];if(i<=20)return[11-(i-10),1];if(i<=30)return[1,1+(i-20)];return[1+(i-30),11]}
+const fit=n=>{const L=Math.max(...n.split(/[\s-]+/).map(w=>w.length));return L>8?`style="font-size:calc(var(--W)/66*${(8/L).toFixed(2)})"`:''};
 function cellHTML(i){const s=SP[i],[r,c]=gp(i),side=i%10===0?'corner':i<10?'b':i<20?'l':i<30?'t':'r',pr=S.props[i];
  let inner,style=`grid-row:${r};grid-column:${c};`,cls='cell '+(side==='corner'?'':side);
  if(side==='corner')inner=`<div class="cn"><div class="ic">${s.ic}</div><div class="nm">${s.name}</div>${s.sub?`<div class="sb">${s.sub}</div>`:''}</div>`;
- else if(s.t==='street'){const h=pr.houses;inner=`<div class="bar" style="background:${G[s.g][0]}">${h===5?'🏨':'🏠'.repeat(h)}</div><div class="txt"><div class="nm">${s.name}</div><div class="pr">${pr.mort?'залог':'$'+s.price}</div></div>`}
- else inner=`<div class="txt"><div class="ic2">${s.ic}</div><div class="nm">${s.name}</div><div class="pr">${s.price?(pr.mort?'залог':'$'+s.price):s.amt?'$'+s.amt:''}</div></div>`;
+ else if(s.t==='street'){const h=pr.houses;inner=`<div class="bar" style="background:${G[s.g][0]}">${h===5?'🏨':'🏠'.repeat(h)}</div><div class="txt"><div class="nm" ${side==='l'||side==='r'?'':fit(s.name)}>${s.name}</div><div class="pr">${pr.mort?'залог':'$'+s.price}</div></div>`}
+ else inner=`<div class="txt"><div class="ic2">${s.ic}</div><div class="nm" ${side==='l'||side==='r'?'':fit(s.name)}>${s.name}</div><div class="pr">${s.price?(pr.mort?'залог':'$'+s.price):s.amt?'$'+s.amt:''}</div></div>`;
  if(pr&&pr.owner!=null){style+=`box-shadow:inset 0 0 0 3px ${S.players[pr.owner].color};`;if(pr.mort)cls+=' mort'}
  const tk=S.players.filter(p=>!p.out&&p.pos===i).map(p=>`<div class="tk" style="border-color:${p.color}">${p.token}</div>`).join('');
  return `<div class="${cls}" style="${style}" data-c="${i}">${inner}${tk?`<div class="toks">${tk}</div>`:''}</div>`}
