@@ -780,12 +780,16 @@ function mountDice(root,key){const d=diceNode(key);const ph=root&&root.isConnect
 addEventListener('resize',()=>setTimeout(()=>{Object.keys(DICE).forEach(k=>{const d=DICE[k];if(!d.isConnected)return})},0));
 function gp(i){if(i<=10)return[11,11-i];if(i<=20)return[11-(i-10),1];if(i<=30)return[1,1+(i-20)];return[1+(i-30),11]}
 const fit=n=>{const L=Math.max(...n.split(/[\s-]+/).map(w=>w.length));return L>9?`style="font-size:calc(var(--u)/5.2*${(9/L).toFixed(2)})"`:''};
-function autofit(root){(root||document.getElementById('board')).querySelectorAll('.nm').forEach(e=>{let fs=parseFloat(getComputedStyle(e).fontSize),n=0;while(e.scrollWidth>e.clientWidth+.5&&n<25){fs*=.93;e.style.fontSize=fs+'px';n++}})}
+function autofit(root){root=root||document.getElementById('board');root.querySelectorAll('.nm').forEach(e=>{let fs=parseFloat(getComputedStyle(e).fontSize),n=0;while(e.scrollWidth>e.clientWidth+.5&&n<25){fs*=.93;e.style.fontSize=fs+'px';n++}});
+root.querySelectorAll('.cin').forEach(ci=>{const box=(ci.closest('.jail')||ci.closest('.cell'));if(!box)return;const rot=ci.dataset.rot!=null?+ci.dataset.rot:45;let k=1,n=0;
+ const over=()=>{const b=box.getBoundingClientRect(),m=b.width*.07;let o=false;ci.querySelectorAll('.nm2,.sb,.nic,svg').forEach(x=>{const r=x.getBoundingClientRect();if(!r.width)return;if(r.left<b.left+m||r.right>b.right-m||r.top<b.top+m||r.bottom>b.bottom-m)o=true});return o};
+ while(n<20&&over()){k*=.94;ci.style.transform=`rotate(${rot}deg) scale(${k})`;n++}});
+root.querySelectorAll('.vis').forEach(v=>{const c=v.closest('.cell');if(!c)return;const t=v.querySelector('span')||v;let fs=parseFloat(getComputedStyle(t).fontSize),n=0;const cr=c.getBoundingClientRect();while(n<15){const r=t.getBoundingClientRect();if(r.left>=cr.left&&r.right<=cr.right&&r.top>=cr.top&&r.bottom<=cr.bottom)break;fs*=.92;t.style.fontSize=fs+'px';n++}})}
 const tokHTML=p=>`<div class="tk" style="border-color:${p.color};--pc:${p.color}">${p.token}</div>`;
 function cellHTML(i){const s=SP[i],[r,c]=gp(i),side=i%10===0?'corner':i<10?'b':i<20?'l':i<30?'t':'r',pr=S.props[i];
  let inner,style=`grid-row:${r};grid-column:${c};`,cls='cell '+side;
  if(i===10)inner=`<div class="jail"><div class="bars"></div><div class="cin"><div class="ic">${ICO(s,i)}</div><div class="nm2">${s.name}</div></div></div><div class="vis lft"><span>просто</span></div><div class="vis bot">в гостях</div>`;
- else if(side==='corner'){const rot={0:-45,20:135,30:-135}[i];inner=`<div class="cin" style="transform:rotate(${rot}deg)">${i===0?'<div class="sb">'+s.sub+'</div>':''}<div class="nm2" style="font-size:calc(var(--u)/${i===0?3.6:4.4})">${s.name}</div><div class="ic">${ICO(s,i)}</div>${i!==0&&s.sub?`<div class="sb">${s.sub}</div>`:''}</div>`}
+ else if(side==='corner'){const rot={0:-45,20:135,30:-135}[i];inner=`<div class="cin" data-rot="${rot}" style="transform:rotate(${rot}deg)">${i===0?'<div class="sb">'+s.sub+'</div>':''}<div class="nm2" style="font-size:calc(var(--u)/${i===0?3.6:4.4})">${s.name}</div><div class="ic">${ICO(s,i)}</div>${i!==0&&s.sub?`<div class="sb">${s.sub}</div>`:''}</div>`}
  else{let body;
   if(s.t==='street'){const h=pr.houses;body=`<div class="bar" style="background:${G[s.g][0]};--c:${G[s.g][0]}">${h===5?'<i class="ht"></i>':'<i class="hs"></i>'.repeat(h)}</div><div class="nm" ${fit(s.name)}>${s.name}</div>${NEON()?`<div class="pic">${svgS(s.name,G[s.g][0])}</div>`:''}<div class="pr">${M(s.price)}</div>`}
   else if(s.t==='chance')body=`<div class="nm" ${fit(s.name)}>${s.name}</div>${NEON()?`<div class="ic2">${svgI('chance')}</div>`:'<div class="q">?</div>'}`;
