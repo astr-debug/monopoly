@@ -1067,8 +1067,7 @@ if(S&&S.players){if(!S.phoneHost)$('app').style.display='flex';render();if(S.net
 <script>
 (function(){
  const q=new URLSearchParams(location.search);
- if(q.has('bc')||q.has('fakemq')||q.has('nogift'))return;
- try{if(sessionStorage.getItem('lp-gift'))return}catch(e){}
+ if(!q.has('gift'))return; // заставка-подарок выключена; включить: ссылка с ?gift=1
  const g=document.createElement('div');g.id='gift';
  g.innerHTML=`<canvas></canvas><div class="gt">Сюрприз для Лены</div><div class="gbox"><div class="meme"><svg viewBox="0 0 200 200"><g transform="translate(0,20)">
 <ellipse cx="100" cy="168" rx="70" ry="9" fill="#000" opacity=".35"/>
