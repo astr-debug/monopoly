@@ -1096,7 +1096,7 @@ if(S&&S.players){if(!S.phoneHost)$('app').style.display='flex';render();if(S.net
  const sad=()=>{try{const c=actx();if(!c||!SND.on)return;setTimeout(()=>{[392,370,349].forEach((f,i)=>tone(f,i*.38,.36,'triangle',.11));tone(330,1.14,.9,'triangle',.11)},150)}catch(e){}};
  g.addEventListener('click',()=>{const now=Date.now();
   if(stage===0){stage=1;ready=now+2500;g.classList.add('open');sad();
-   setTimeout(()=>{g.classList.add('lost');g.querySelector('.gt').textContent='Упс… подарок утерян';g.querySelector('.gs').textContent='Служба доставки Ленаполии приносит свои извинения'},650);return}
+   setTimeout(()=>{g.classList.add('lost');g.querySelector('.gt').textContent='Упс… подарок утерян';g.querySelector('.gs').textContent='Служба доставки приносит свои извинения'},650);return}
   if(stage===1&&now>=ready){stage=2;yay()}
  });
  function yay(){try{sessionStorage.setItem('lp-gift','1')}catch(e){}
