@@ -836,7 +836,7 @@ const rid=n=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';for(let i=0;i<
 const peerId=room=>'lenapoly-'+room.toLowerCase();
 const joinURL=()=>location.origin+location.pathname+'?join='+NET.room+(NET.broker!=null?'&b='+NET.broker:'')+(NET.bc?'&bc=1':'')+(QS.get('fakemq')?'&fakemq=1':'');
 const netOnline=pid=>Object.entries(NET.who).some(([c,p])=>p===pid&&(c==='local'||Date.now()-(NET.seen[c]||0)<25000));
-const NETFAIL='Не получилось подключиться к сервису связи. Режим с телефонов работает, когда игра открыта по ссылке на GitHub Pages (astr-debug.github.io/monopoly), а не внутри Claude.';
+const NETFAIL='Не получилось подключиться к сервису связи. Режим с телефонов работает, когда игра открыта по ссылке на GitHub Pages (astr-debug.github.io/mp), а не внутри Claude.';
 
 /* ---- transports ---- */
 function mqConnect(list){return new Promise((res,rej)=>{const tryIdx=k=>{if(k>=list.length)return rej(new Error('mq'));let done=false,c;
